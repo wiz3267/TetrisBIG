@@ -1,0 +1,1951 @@
+// DialogInputName.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "TetrisMFC.h"
+#include "DialogInputName.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// DialogInputName dialog
+
+
+DialogInputName::DialogInputName(CWnd* pParent /*=NULL*/)
+	: CDialog(DialogInputName::IDD, pParent)
+{
+	//{{AFX_DATA_INIT(DialogInputName)
+	m_InputName = _T("");
+	//}}AFX_DATA_INIT
+}
+
+
+void DialogInputName::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(DialogInputName)
+	DDX_Text(pDX, IDC_EDIT1, m_InputName);
+	DDV_MaxChars(pDX, m_InputName, 14);
+	//}}AFX_DATA_MAP
+}
+
+
+BEGIN_MESSAGE_MAP(DialogInputName, CDialog)
+	//{{AFX_MSG_MAP(DialogInputName)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// DialogInputName message handlers
+
+void DialogInputName::OnOK() 
+{
+	// TODO: Add extra validation here
+	
+	CDialog::OnOK();
+}
+// FIGURE.cpp: implementation of the CFIGURE class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "TetrisMFC.h"
+#include "FIGURE.h"
+#include "GLASS.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CFIGURE::CFIGURE()
+{
+
+}
+
+CGLASS * CFIGURE::glass;
+
+CFIGURE::~CFIGURE()
+{
+	//delete bxData;
+}
+
+//конструирование фигуры
+//len ширина фигуры
+//hei высота фигуры
+//bxData  данные фигуры
+// 001
+// 111
+CFIGURE::CFIGURE(int l, int h, bool *bxd)
+{
+	len=l;
+	hei=h;
+	bxData=new bool[len*hei];
+	CopyMemory(bxData, bxd, len*hei);
+}
+
+void CFIGURE::Rotate(bool sign)
+{
+//	return;
+	bool *newbox=new bool[len*hei];
+	
+//	if (sign == true)
+//	{
+     for(int y=0; y<hei; y++)
+	for(int x=0; x<len; x++)
+		{
+			newbox[y*len+(len-x-1)]=bxData[x*len+y];
+		}
+//	}
+//	else
+//	{
+//	for(int y=0; y<hei; y++)
+//		for(int x=0; x<len; x++)
+//		{
+//			newbox[y*len+(len-x-1)]=bxData[(len-x-1)*len+y];
+//		}
+
+//	}
+
+	int h=hei;
+	hei=len;
+	len=h;
+
+	bool * oldBx=bxData;
+	bxData=newbox;
+//	delete oldBx;
+}
+
+//показывает фигуру в координатах x,y стакана
+// true - OK
+// false - либо фигура наложилась на другие
+// либо за пределами экрана
+bool CFIGURE::Show(int x, int y)
+{
+	bool err=true;
+	for(int x1=0; x1<len; x1++)
+		for(int y1=0; y1<hei; y1++)
+		{
+			BOX bx1;
+			
+			if (bxData[y1*len+x1]) bx1=bx;
+
+			if (bx1)
+			{
+				if (!glass->Write(x+x1, y+y1,bx)) err=false;
+			}
+		}
+
+	return err;
+}
+
+//вырезаем фигуру
+bool CFIGURE::Cut(int x, int y)
+{
+	for(int x1=0; x1<len; x1++)
+		for(int y1=0; y1<hei; y1++)
+		{
+			if (bxData[y1*len+x1]) glass->Write(x+x1,y+y1,BOX());
+			//if (!glass->Write(x+x1, y+y1,bx)) return false;
+		}
+
+	return true;
+}
+
+//можно ли нарисовать фигуру в заданных
+//координатах
+bool CFIGURE::Check(int x, int y)
+{
+	for(int x1=0; x1<len; x1++)
+		for(int y1=0; y1<hei; y1++)
+		{
+			//если есть данные в этом месте
+			if (bxData[y1*len+x1]) 
+			{
+				//если в стакане можно считать
+				if (glass->Read(x+x1,y+y1).color != 0)
+					return false;
+			}
+		}
+	return true;
+}
+// MainFrm.cpp : implementation of the CMainFrame class
+//
+
+#include "stdafx.h"
+#include "TetrisMFC.h"
+
+#include "MainFrm.h"
+#include "glass.h"
+
+#include "tetrisMFCDoc.h"
+#include "dialoginputname.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CMainFrame
+
+IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
+
+BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
+	//{{AFX_MSG_MAP(CMainFrame)
+	ON_WM_CREATE()
+	ON_WM_CLOSE()
+	ON_WM_GETMINMAXINFO()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CMainFrame construction/destruction
+
+CMainFrame::CMainFrame()
+{
+	// TODO: add member initialization code here
+	
+}
+
+CMainFrame::~CMainFrame()
+{
+}
+
+int CMainFrame::OnCreate(LPCREATESTRUCT cr)
+{
+	if (CFrameWnd::OnCreate(cr) == -1)
+		return -1;
+
+//	int cy=GetSystemMetrics(SM_CYFULLSCREEN);
+//	MoveWindow(200,0,400,cy);
+	return 0;
+}
+
+BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
+{
+	if( !CFrameWnd::PreCreateWindow(cs) )
+		return FALSE;
+	// TODO: Modify the Window class or styles here by modifying
+	//  the CREATESTRUCT cs
+
+	cs.hMenu=0;
+//	cs.
+
+	//CreateWindow
+
+
+	cs.style &= ~WS_CAPTION;
+	cs.style |= WS_DLGFRAME; 
+	int cy=GetSystemMetrics(SM_CYFULLSCREEN);
+	int cx=GetSystemMetrics(SM_CXFULLSCREEN);
+	cs.cx=cx/2;
+	cs.cy=cy;
+	cs.x=(cx-cs.cx)/2;
+	cs.y=(cy-cs.cy)/2;
+
+	HINSTANCE hInst=GetModuleHandle(NULL);
+
+WNDCLASS wc;
+	GetClassInfo(
+	hInst,//HINSTANCE hInstance,    // handle to application instance
+  cs.lpszClass ,//LPCTSTR lpClassName,    // class name
+  &wc);//L9PWNDCLASS lpWndClass   // class data
+//);
+
+	wc.hbrBackground=0;
+	UnregisterClass(cs.lpszClass, hInst);
+	RegisterClass(&wc);
+
+	return TRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CMainFrame diagnostics
+
+#ifdef _DEBUG
+void CMainFrame::AssertValid() const
+{
+	CFrameWnd::AssertValid();
+}
+
+void CMainFrame::Dump(CDumpContext& dc) const
+{
+	CFrameWnd::Dump(dc);
+}
+
+#endif //_DEBUG
+
+/////////////////////////////////////////////////////////////////////////////
+// CMainFrame message handlers
+
+
+void CMainFrame::OnClose() 
+{
+
+	CTetrisMFCDoc *doc=((CTetrisMFCDoc *)GetActiveDocument());
+
+	// TODO: Add your command handler code here
+	CGLASS * glass=doc->_glass_;
+	if (glass->Score > doc->rectab->GetMinScore())
+	{
+
+				if (MessageBox(
+					" Уверены, что хотите выйти ", "В Н И М А Н И Е ! ! !",
+					MB_OKCANCEL) == IDOK)
+				{
+
+
+					DialogInputName di;
+					di.DoModal();
+
+					doc->rectab->PutNewRecord(
+						glass->Score,
+						glass->Lines, 
+						glass->Second, 
+						di.m_InputName.GetBuffer(0));
+					
+				}
+				else return;
+		}
+			
+	CFrameWnd::OnClose();
+
+	// TODO: Add your message handler code here and/or call default
+//	GetActiveDocument()->_glass
+/*	if (MessageBox(
+		"Хотите выйти из игры 'TETRIS' ?\n\r"
+		"В случае положительного ответа на этот\n\r"
+		"вопрос, Ваш текущий рекорд бует безвозратно утерян!\n\r",
+		" В Н И М А Н И Е !", MB_OKCANCEL) == IDOK)
+	*/
+}
+
+/*void CMainFrame::OnPaint() 
+{
+	CPaintDC dc(this); // device context for painting
+
+	dc.TextOut(0,0, "STRING");
+	// TODO: Add your message handler code here
+	// Do not call CFrameWnd::OnPaint() for painting messages
+}*/
+
+void CMainFrame::OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI) 
+{
+	// TODO: Add your message handler code here and/or call default
+	lpMMI->ptMaxSize.y=200;
+	lpMMI->ptMinTrackSize.y=320;
+
+	
+	CFrameWnd::OnGetMinMaxInfo(lpMMI);
+}
+// stdafx.cpp : source file that includes just the standard includes
+//	TetrisMFC.pch will be the pre-compiled header
+//	stdafx.obj will contain the pre-compiled type information
+
+#include "stdafx.h"
+
+
+
+// TetrisMFC.cpp : Defines the class behaviors for the application.
+//
+
+#include "stdafx.h"
+#include "TetrisMFC.h"
+
+#include "MainFrm.h"
+#include "TetrisMFCDoc.h"
+#include "TetrisMFCView.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCApp
+
+BEGIN_MESSAGE_MAP(CTetrisMFCApp, CWinApp)
+	//{{AFX_MSG_MAP(CTetrisMFCApp)
+	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
+		// NOTE - the ClassWizard will add and remove mapping macros here.
+		//    DO NOT EDIT what you see in these blocks of generated code!
+	//}}AFX_MSG_MAP
+	// Standard file based document commands
+	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
+	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCApp construction
+
+CTetrisMFCApp::CTetrisMFCApp()
+{
+	// TODO: add construction code here,
+	// Place all significant initialization in InitInstance
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// The one and only CTetrisMFCApp object
+
+CTetrisMFCApp theApp;
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCApp initialization
+
+BOOL CTetrisMFCApp::InitInstance()
+{
+	// Standard initialization
+	// If you are not using these features and wish to reduce the size
+	//  of your final executable, you should remove from the following
+	//  the specific initialization routines you do not need.
+
+	// Change the registry key under which our settings are stored.
+	// TODO: You should modify this string to be something appropriate
+	// such as the name of your company or organization.
+	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+
+	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
+
+	// Register the application's document templates.  Document templates
+	//  serve as the connection between documents, frame windows and views.
+
+	CSingleDocTemplate* pDocTemplate;
+	pDocTemplate = new CSingleDocTemplate(
+		IDR_MAINFRAME,
+		RUNTIME_CLASS(CTetrisMFCDoc),
+		RUNTIME_CLASS(CMainFrame),       // main SDI frame window
+		RUNTIME_CLASS(CTetrisMFCView));
+	AddDocTemplate(pDocTemplate);
+
+	// Parse command line for standard shell commands, DDE, file open
+	CCommandLineInfo cmdInfo;
+	ParseCommandLine(cmdInfo);
+
+	// Dispatch commands specified on the command line
+	if (!ProcessShellCommand(cmdInfo))
+		return FALSE;
+
+	// The one and only window has been initialized, so show and update it.
+	m_pMainWnd->ShowWindow(SW_SHOW);
+	m_pMainWnd->UpdateWindow();
+
+	return TRUE;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CAboutDlg dialog used for App About
+
+class CAboutDlg : public CDialog
+{
+public:
+	CAboutDlg();
+
+// Dialog Data
+	//{{AFX_DATA(CAboutDlg)
+	enum { IDD = IDD_ABOUTBOX };
+	//}}AFX_DATA
+
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CAboutDlg)
+	protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	//}}AFX_VIRTUAL
+
+// Implementation
+protected:
+	//{{AFX_MSG(CAboutDlg)
+		// No message handlers
+	//}}AFX_MSG
+	DECLARE_MESSAGE_MAP()
+};
+
+CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
+{
+	//{{AFX_DATA_INIT(CAboutDlg)
+	//}}AFX_DATA_INIT
+}
+
+void CAboutDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CAboutDlg)
+	//}}AFX_DATA_MAP
+}
+
+BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+	//{{AFX_MSG_MAP(CAboutDlg)
+		// No message handlers
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+// App command to run the dialog
+void CTetrisMFCApp::OnAppAbout()
+{
+	CAboutDlg aboutDlg;
+	aboutDlg.DoModal();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCApp message handlers
+
+// TetrisMFCDoc.cpp : implementation of the CTetrisMFCDoc class
+//
+
+#include "stdafx.h"
+#include "TetrisMFC.h"
+
+#include "TetrisMFCDoc.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCDoc
+
+IMPLEMENT_DYNCREATE(CTetrisMFCDoc, CDocument)
+
+BEGIN_MESSAGE_MAP(CTetrisMFCDoc, CDocument)
+	//{{AFX_MSG_MAP(CTetrisMFCDoc)
+		// NOTE - the ClassWizard will add and remove mapping macros here.
+		//    DO NOT EDIT what you see in these blocks of generated code!
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCDoc construction/destruction
+
+CTetrisMFCDoc::CTetrisMFCDoc()
+{
+	// TODO: add one-time construction code here
+
+}
+
+CTetrisMFCDoc::~CTetrisMFCDoc()
+{
+}
+
+BOOL CTetrisMFCDoc::OnNewDocument()
+{
+	if (!CDocument::OnNewDocument())
+		return FALSE;
+
+	// TODO: add reinitialization code here
+	// (SDI documents will reuse this document)
+
+	return TRUE;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCDoc serialization
+
+void CTetrisMFCDoc::Serialize(CArchive& ar)
+{
+	if (ar.IsStoring())
+	{
+		// TODO: add storing code here
+	}
+	else
+	{
+		// TODO: add loading code here
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCDoc diagnostics
+
+#ifdef _DEBUG
+void CTetrisMFCDoc::AssertValid() const
+{
+	CDocument::AssertValid();
+}
+
+void CTetrisMFCDoc::Dump(CDumpContext& dc) const
+{
+	CDocument::Dump(dc);
+}
+#endif //_DEBUG
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCDoc commands
+// TetrisMFCView.cpp : implementation of the CTetrisMFCView class
+//
+
+#include "stdafx.h"
+#include "TetrisMFC.h"
+
+#include "TetrisMFCDoc.h"
+#include "TetrisMFCView.h"
+
+#include "dialoginputname.h"
+
+#include <mmsystem.h>
+
+#include "mylib\moveobj.h"
+
+#include "figure.h"
+
+#define TIMER_DEVIDE 25
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCView
+
+IMPLEMENT_DYNCREATE(CTetrisMFCView, CView)
+
+BEGIN_MESSAGE_MAP(CTetrisMFCView, CView)
+	//{{AFX_MSG_MAP(CTetrisMFCView)
+	ON_WM_TIMER()
+	ON_WM_CREATE()
+	ON_WM_KILLFOCUS()
+	ON_WM_SETFOCUS()
+	ON_WM_CHAR()
+	ON_WM_DESTROY()
+	ON_COMMAND(ID_APP_EXIT, OnAppExit)
+	ON_WM_SIZE()
+	ON_COMMAND(ID_MENU_SHOW_ONLY_GLASS, OnMenuShowOnlyGlass)
+	ON_WM_LBUTTONDOWN()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+HANDLE hMailSlotServer;
+
+	bool buf0[]={
+		0,0,1,
+		1,1,1,
+		0,0,0
+	};
+	bool buf1[]={
+		0,1,0,
+		1,1,1,
+		0,0,0
+	};
+	bool buf2[]={
+		1,1,
+		1,1
+	};
+	bool buf3[]={
+		1,0,0,0,
+		1,0,0,0,
+		1,0,0,0,
+		1,0,0,0
+	};
+	bool buf4[]={
+		1,1,1,
+		0,0,1,
+		0,0,0
+	};
+
+	bool buf5[]={1};
+
+
+
+/*	bool buf_death[]={
+		1,1,1,1,
+		1,1,1,1,
+		1,1,1,1,
+		1,1,1,1
+	};*/
+
+int nPlayer;
+
+CFIGURE
+ fig0(3,3, buf0),
+ fig1(3,3, buf1),
+ fig2(2,2, buf2),
+ fig3(4,4, buf3),
+ fig4(3,3, buf4),
+fig_small(1,1, buf5);
+//fig_death(4,4, buf_death);
+
+
+int //TimerStop=false, 
+Pause=false;
+
+int rand(int n)
+{
+	return rand()%n;
+}
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCView construction/destruction
+
+CTetrisMFCView::CTetrisMFCView() : fig(fig0)
+{
+	// TODO: add construction code here
+
+	glass= new CGLASS(10,20,NULL);
+	fig.glass=glass;
+	fig.bx=RGB(rand(2)*255,rand(2)*255,rand(2)*255);
+	if (!fig.bx) fig.bx=255;
+	rectable.glass=glass;
+	
+	srand(GetTickCount());
+
+}
+
+CTetrisMFCView::~CTetrisMFCView()
+{
+}
+
+BOOL CTetrisMFCView::PreCreateWindow(CREATESTRUCT& cs)
+{
+	// TODO: Modify the Window class or styles here by modifying
+	//  the CREATESTRUCT cs
+
+	return CView::PreCreateWindow(cs);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCView drawing
+
+void CTetrisMFCView::OnDraw(CDC* pDC)
+{
+	CTetrisMFCDoc* pDoc = GetDocument();
+	pDoc->_glass_=glass;
+	pDoc->rectab=&rectable;
+	ASSERT_VALID(pDoc);
+
+	glass->showDC=pDC;
+	rectable.Show(glass->Score, glass->Name.GetBuffer(0), glass->Lines, RGB(255,0,0));
+	glass->Show();
+
+	if (Pause)
+	{
+		LOGFONT lf={0};
+		lf.lfHeight=glass->ONE_LEN;
+		lf.lfWidth=lf.lfHeight/2;
+		CFont font;
+		font.CreateFontIndirect(&lf);
+		CFont * oldf=pDC->SelectObject(&font);
+		pDC->SetTextColor(RGB(255,255,255));
+		
+		pDC->DrawText("Pause",
+		CRect(0, glass->ONE_LEN*2, glass->GetPixelWidth(),
+		glass->GetPixelHeight()),1);
+		pDC->SelectObject(oldf);
+	}
+
+	// TODO: add draw code for native data here
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCView diagnostics
+
+#ifdef _DEBUG
+void CTetrisMFCView::AssertValid() const
+{
+	CView::AssertValid();
+}
+
+void CTetrisMFCView::Dump(CDumpContext& dc) const
+{
+	CView::Dump(dc);
+}
+
+CTetrisMFCDoc* CTetrisMFCView::GetDocument() // non-debug version is inline
+{
+	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CTetrisMFCDoc)));
+	return (CTetrisMFCDoc*)m_pDocument;
+}
+#endif //_DEBUG
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CTetrisMFCView message handlers
+
+bool 
+ NeedMoveDown=false, NeedMoveLeft=false, NeedMoveRight=false;
+int Ycntr=0;
+int x=0,y=0;
+
+int NeedMoveLeftRightCounter=0;
+void CTetrisMFCView::OnTimer(UINT nIDEvent) 
+{ 
+	static bool noTimer=false;
+	// TODO: Add your message handler code here and/or call default
+//	if (TimerStop) return;
+	if (noTimer) return;
+
+
+	GetDocument()->SetTitle(CString("PLAYER-")+char(48+nPlayer));
+
+	struct MailMessage
+	{
+					UINT message;
+					WPARAM wParam;
+					LPARAM lParam;
+	};
+
+	MailMessage mail;
+
+
+	DWORD fact;
+	ReadFile(hMailSlotServer, &mail, sizeof(mail),
+		&fact, NULL);
+
+
+	if (fact== sizeof(mail))
+	{
+		//AfxMessageBox("OK READ MAIL!");
+		//снимаем паузу
+		Pause=false;
+		if (mail.message==WM_KEYUP)
+				OnKeyUp(mail.wParam, mail.lParam);
+		if (mail.message==WM_KEYDOWN)
+				OnKeyDown(mail.wParam, mail.lParam);
+	}
+	
+	{
+		static int mmm=1;
+		if(mmm<20 && mmm>0) 
+		{
+			mmm++;
+         if (mmm==19) OnMenuShowOnlyGlass(),mmm=-1;
+
+		}
+	}
+
+	//считаем время
+	if (!Pause)
+	{
+		static float k=0;
+		if (k++ > 1000/TIMER_DEVIDE) 
+			glass->Second++, k=0;
+	} else 	return;
+
+
+
+/*	if (!Pause)
+	{
+
+ 		fig.Show(x,y);
+		InvalidateRect(NULL, true);
+		UpdateWindow();
+		fig.Cut(x,y);
+	}*/
+
+
+	fig.Cut(x,y);
+
+	if (NeedMoveLeft || NeedMoveRight)
+	{
+/////////////////////////////////////////////////////////
+	if (NeedMoveLeftRightCounter++ >1)
+	{
+		NeedMoveLeftRightCounter=0;
+	int step=0, stepy=0;
+	if (NeedMoveLeft) step=-1;
+	if (NeedMoveRight) step=+1;
+
+	//NeedMoveDown && NeedMoveLeft) stepy=-2;
+
+	x+=step;
+	y+=stepy;
+	if (fig.Check(x,y)) 
+	{
+		fig.Show(x,y);
+		Invalidate(false);
+		UpdateWindow();
+		return;
+	}
+	//невозможно отобразить
+	else {
+		x-=step;
+		y-=stepy;
+		//fig.Show(x,y);
+	}
+	}
+/////////////////////////////////////////////////////////	
+	}
+
+
+
+	if (!NeedMoveDown)
+	{
+		Ycntr++;
+		int m=15-glass->Speed;
+		if (m<3) m=3;
+		if (Ycntr< m) return;
+		Ycntr=0;
+	}
+
+	glass->Speed= 1+glass->Score/2000;
+
+	
+	y++;
+	if (fig.Check(x,y) == true) fig.Show(x,y);
+	else {
+
+		fig.Show(x,y-1); 
+		//MessageBeep(1);
+
+		//	glass->Show();
+		glass->showDC=GetDC();
+		//скорллим и уничтожаем линии
+		glass->Scroll();
+
+		ReleaseDC(glass->showDC);
+
+		//Beep(600, 100);
+
+		int prob=rand(100);
+		
+		if (prob>90)fig=fig3;
+		else if (prob>70) fig=fig2;
+		else if (prob>60)fig=fig1; 
+		//else if (prob>30)fig=fig1; 
+		else fig=fig4;
+
+		for(int n=0; n< rand(4); n++)
+		fig.Rotate(true);
+
+		if (rand(40)==39) {
+			fig=fig_small;
+		}
+
+		x=5;
+
+		int a1=rand(2), a2=rand(2), a3=rand(2);
+		if (! (a1+a2+a3) ) a1=1;
+		fig.bx.color=RGB(a1*255,a2*255,a3*255);
+		fig.bx.type=rand(2);
+		y=-2;
+		//Beep(600, 100);
+		//game over
+		if (!fig.Check(x,y)) {
+			fig.Show(x,y);
+			glass->Show();
+			noTimer=true;
+			//Sleep(500);		
+			sndPlaySound("EXORCISM.wav", SND_ASYNC);
+			//game OVER
+			Sleep(1000);		
+
+			if (glass->Score > rectable.GetMinScore())
+			{
+
+			DialogInputName di;
+			di.DoModal();
+
+			glass->Name=di.m_InputName;
+			glass->showDC=GetDC();
+			/*for(int JJ=0; JJ<30; JJ++)
+			{
+				rectable.Show(glass->Score, glass->Name.GetBuffer(0), glass->Lines, RGB(255,0,255));
+				Sleep(50);
+				rectable.Show(glass->Score, glass->Name.GetBuffer(0), glass->Lines, RGB(0,255,0));
+				Sleep(50);
+			}*/
+
+			rectable.PutNewRecord(
+				glass->Score,
+				glass->Lines, 
+				glass->Second, 
+				di.m_InputName.GetBuffer(0));
+
+			}
+
+			glass->Clear();			
+			//MessageBox("ИГРА ОКОНЧЕНА");
+			//game over
+			Invalidate(true);
+			UpdateWindow();
+			noTimer=false;
+		}
+		else fig.Show(x,y);
+		
+		NeedMoveDown=false;	
+	}
+
+	RECT rt;
+	GetClientRect(&rt);
+
+	if (glass->ONE_LEN - rt.bottom/glass->Hei
+		!=0)
+	{
+	glass->ONE_LEN=rt.bottom/glass->Hei;
+	//InvalidateRect(NULL);
+	//UpdateWindow();
+	}
+
+	//CDC * pDC=GetDC();
+	//OnDraw(pDC);
+	//ReleaseDC(pDC);
+	InvalidateRect(NULL);
+	UpdateWindow();
+
+
+	//есть переход через 1000 ?
+	static int oldScore=0;
+	if (abs(oldScore-glass->Score) > 1000)
+	{
+		oldScore=glass->Score;
+		glass->LoadNextBackground();
+	}
+
+	CView::OnTimer(nIDEvent);
+}
+
+int CTetrisMFCView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+{
+	if (CView::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	glass->Name="Предендент";
+	SetTimer(1, TIMER_DEVIDE,NULL);
+
+	CString mailName="\\\\.\\mailslot\\ServerGame";
+	hMailSlotServer=CreateMailslot(mailName+'1', 0,
+		0, NULL);
+
+	if (hMailSlotServer == INVALID_HANDLE_VALUE)
+	{
+		//AfxMessageBox("Create mail slot for two player");
+		//mailName[strlen(mailName)-1]++;
+
+		hMailSlotServer=CreateMailslot(mailName+'2', 0,
+		0, NULL);
+		if (hMailSlotServer == INVALID_HANDLE_VALUE)
+		{
+					AfxMessageBox("ERROR - Create mail slot for two player");
+		}
+		else
+			nPlayer=2;
+
+
+	}
+	else nPlayer=1;
+
+	InvalidateRect(NULL);
+	UpdateWindow();
+	return 0;
+}
+
+
+
+
+BOOL CTetrisMFCView::PreTranslateMessage(MSG* pMsg) 
+{
+	// TODO: Add your specialized code here and/or call the base class
+
+	if (pMsg->message == WM_KEYDOWN)
+		OnKeyDown(pMsg->wParam , pMsg->lParam);
+	if (pMsg->message == WM_KEYUP)
+		OnKeyUp(pMsg->wParam , pMsg->lParam);
+
+	return CView::PreTranslateMessage(pMsg);
+}
+
+void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
+{
+	if (wp==VK_SPACE) 
+	{
+		if (++glass->TypeBoxView>5)
+		glass->TypeBoxView=0;
+		
+	}
+	if (wp == VK_DOWN) NeedMoveDown=true;	
+	if (wp == VK_LEFT) {
+		NeedMoveLeft=true;
+	NeedMoveLeftRightCounter=255;
+	}
+	if (wp == VK_RIGHT) {
+		NeedMoveRight=true;
+	NeedMoveLeftRightCounter=255;
+	}
+
+	fig.Cut(x,y);
+
+	int step=0, stepy=0;
+//	if (wp==VK_LEFT) step=-1;
+//	else if (wp==VK_RIGHT) step=+1;
+	//else if (nChar==`'5') stepy=+1;
+	if (wp==VK_UP) fig.Rotate(true);
+	//else if (nChar=='9') fig.Rotate(false);
+	else return;
+
+	x+=step;
+	y+=stepy;
+	if (fig.Check(x,y)) 
+	{
+		fig.Show(x,y);
+		Invalidate(false);
+		UpdateWindow();
+	}
+	//невозможно отобразить
+	else {
+		if (wp==VK_UP) 
+		{
+			fig.Rotate(true);
+			fig.Rotate(true);
+			fig.Rotate(true);
+		}
+		//if (nChar=='9') fig.Rotate(true);
+		x-=step;
+		y-=stepy;
+		fig.Show(x,y);
+
+		//MOVEOBJ obj;
+		
+	}
+		
+	//MessageBeep(1);
+}
+
+void CTetrisMFCView::OnKeyUp(WPARAM wp, LPARAM lp)
+{
+	if (wp == VK_DOWN) NeedMoveDown=false;	
+	if (wp == VK_LEFT) NeedMoveLeft=false;	
+	if (wp == VK_RIGHT) NeedMoveRight=false;
+}
+
+void CTetrisMFCView::OnKillFocus(CWnd* pNewWnd) 
+{
+	CView::OnKillFocus(pNewWnd);
+
+	Pause=true;
+	Invalidate(false);
+	UpdateWindow();
+	// TODO: Add your message handler code here
+	
+}
+
+void CTetrisMFCView::OnSetFocus(CWnd* pOldWnd) 
+{
+	CView::OnSetFocus(pOldWnd);
+
+	Pause=false;
+	// TODO: Add your message handler code here
+	
+}
+
+void CTetrisMFCView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
+{
+	// TODO: Add your message handler code here and/or call default
+
+	/*
+	if (nChar=='z')
+	{
+		const MAX=640;
+		int mas[MAX]={0};
+		for(int j=0; j<2000; j++)
+		for(int i=0; i<MAX; i++)
+		{
+			mas[rand(640)]++;
+			glass->showDC->SetPixel(i, mas[i], RGB(255,255,0));
+		}
+	}
+	*/
+
+//	if (nChar=='~') glass->Score+=1000;
+
+	if (nChar=='n') glass->LoadNextBackground();
+
+	//if (nChar=='f')
+	//	for(int i=0; i<glass->Len; i++)
+	//		for(int j=0; j<glass->Hei; j++)
+	//			glass->Write(i,j, (255<<8)*rand(2)+(255<<16)*rand(2)+255*rand(2));
+	CView::OnChar(nChar, nRepCnt, nFlags);
+}
+
+void CTetrisMFCView::OnDestroy() 
+{
+	CView::OnDestroy();
+	
+	// TODO: Add your message handler code here
+//	MessageBox("DESTROY");	
+
+}
+
+void CTetrisMFCView::OnAppExit() 
+{
+}
+
+void CTetrisMFCView::OnSize(UINT nType, int cx, int cy) 
+{
+	CView::OnSize(nType, cx, cy);
+	
+	// TODO: Add your message handler code here
+	//InvalidateRect(NULL, true);
+	//UpdateWindow();
+	
+}
+
+void CTetrisMFCView::OnMenuShowOnlyGlass() 
+{
+	// TODO: Add your command handler code here
+//	CWnd *win=GetParent();
+
+  CRect myRect, allwin;
+  GetClientRect(&myRect);
+  GetParent()->GetWindowRect(&allwin);
+
+    //myRect.Width(), myRect.Height());
+
+	GetParent()->
+		MoveWindow(allwin.left, allwin.top, 
+		glass->GetPixelWidth()+ allwin.Width ()-myRect.Width(),
+		glass->GetPixelHeight()+ allwin.Height()-myRect.Height (),
+		true);
+
+	
+}
+
+void CTetrisMFCView::OnLButtonDown(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+CTetrisMFCView::OnMenuShowOnlyGlass();
+
+	CView::OnLButtonDown(nFlags, point);
+}
+
+#include "stdafx.h"
+#include "GLASS.h"
+#include "mylib\moveobj.h"
+
+#include <math.h>
+
+#include <mmsystem.h>
+
+int rand(int);
+
+CBitmap bitmap;
+
+//CDC memBitmapDC;
+
+//УТЕЧКА ПАМЯТИ!!!!!!!!
+void ffLoadImagePixels(CDC &memDC, const char * filename, int &width, int &height,int
+bpp)
+{
+ //MS LoadPic example...
+ HANDLE hFile = CreateFile( filename, GENERIC_READ,
+	 FILE_SHARE_READ, NULL,
+OPEN_EXISTING,
+  0, NULL);
+ if(hFile==INVALID_HANDLE_VALUE) return;
+ DWORD dwFileSize = GetFileSize( hFile, NULL );
+ LPVOID pvData = NULL;
+ HGLOBAL hGlobal = GlobalAlloc( GMEM_MOVEABLE, dwFileSize );
+ pvData = GlobalLock( hGlobal );
+ DWORD dwBytesRead = 0;
+ BOOL bRead = ReadFile( hFile, pvData, dwFileSize, &dwBytesRead, NULL );
+ if(!bRead)
+ {
+  GlobalUnlock(hGlobal);
+  GlobalFree(hGlobal);
+  return;
+ }
+ GlobalUnlock(hGlobal);
+ CloseHandle(hFile);
+
+ LPSTREAM pstm = NULL;
+ HRESULT hr = CreateStreamOnHGlobal( hGlobal, TRUE, &pstm );
+if(FAILED(hr))
+ {
+ return;
+ }
+ IPicture *picture = NULL;
+
+ hr = OleLoadPicture( pstm, dwFileSize, FALSE, IID_IPicture,
+(void**)&picture );
+ if(FAILED(hr))
+ {
+  pstm->Release();
+  return;
+ }
+ pstm->Release();
+ OLE_XSIZE_HIMETRIC olewidth;
+ OLE_YSIZE_HIMETRIC oleheight;
+ picture->get_Width( &olewidth );
+ picture->get_Height( &oleheight );
+
+ //HDC hPictureDC = CreateCompatibleDC( NULL );
+ 
+// picture->SelectPicture( hPictureDC, NULL, NULL );
+  picture->SelectPicture( memDC, NULL, NULL );
+
+ picture->Release();
+
+ //DeleteDC(hPictureDC);
+ //return pixels;
+// return hPictureDC;
+}
+
+
+
+
+
+void CGLASS::LoadNextBackground()
+{
+	static WIN32_FIND_DATA find;
+	static HANDLE hf=0;
+
+	bool a=true;
+
+	for(int Z=0; Z<rand(20); Z++)
+	{
+		if (!hf)
+		{
+			hf=FindFirstFile("m:\\*.jpg",
+				&find);
+
+			if (hf==INVALID_HANDLE_VALUE) 
+			{
+				strcpy(find.cFileName, "706065.jpg");
+				a=false;
+				break;
+			}
+		}
+		else
+			if (!FindNextFile(hf, &find))
+			{
+				FindClose(hf);
+				hf=0;
+			}
+	}
+			
+	int cx,cy;
+
+	//if (a==false)
+	ffLoadImagePixels(memDC, find.cFileName , cx, cy, 1);
+	//else
+	//ffLoadImagePixels(memDC, CString("m:\\")+find.cFileName , cx, cy, 1);
+
+}
+
+
+CGLASS::CGLASS(int l, int h, CDC * dc)
+{
+
+	TypeBoxView=0;
+
+	CDC dc2;
+	dc2.m_hDC=GetDC(NULL);
+	memDC.CreateCompatibleDC(&dc2);
+//	memBitmapDC.CreateCompatibleDC(&dc2);
+	memDC_Save.CreateCompatibleDC(&dc2);
+
+	LoadNextBackground();
+
+  CBitmap * bitmap=new CBitmap;
+  bitmap->CreateCompatibleBitmap(&memDC,1024,768);
+  memDC_Save.SelectObject(bitmap);
+
+//  CBitmap * bitmap2=new CBitmap;
+ // bitmap2->CreateCompatibleBitmap(&memDC,1024,768);
+ // memDC.SelectObject(bitmap2);
+
+	Data=new BOX[l*h];
+
+	Len=l;
+	Hei=h;
+	show_x=show_y=Score=0;
+	ONE_LEN=15;
+
+	Clear();
+
+}
+
+// 15427 Monitor remont
+
+void CGLASS::Clear()
+{
+	for(int x=0; x<Len; x++)
+		for(int y=0; y<Hei; y++)
+			Write(x,y,BOX());
+
+	Score=0;
+	Lines=0;
+	Second=0;
+	Speed=1;
+	Name="Претендент";
+}
+
+int DrawGradientString(CDC * pDC,int x, int y, CString str, COLORREF clr, int step=5)
+{
+	CSize size=pDC->GetTextExtent(str);
+	pDC->SetBkMode(TRANSPARENT);
+	pDC->TextOut(x, y, str);
+	return x+size.cx;
+}
+
+void CGLASS::ShowToScreen()
+{
+//	showDC->StretchBlt(show_x,show_y,
+//	ONE_LEN*Len * 0.7,
+//	ONE_LEN*Hei * 0.7, 
+///	&memDC,0,0,
+///	ONE_LEN*Len,
+//	ONE_LEN*Hei, 
+
+	CString k,k1,k2,k3;
+	k.Format(" ОЧКИ %06i", Score);
+	k1.Format(" ЛИНИЙ %03i", Lines);
+	k2.Format(" ВРЕМЯ  %02i:%02i", int(Second)/60, int(Second)%60),
+	k3.Format(" УРОВЕНЬ %02i", Speed);
+
+	CFont  *font=NULL;
+	//if (!font)
+	//{
+		LOGFONT lf={0};
+		lf.lfHeight=long(ONE_LEN/1.4);
+		lf.lfWidth=lf.lfHeight /2;
+		lf.lfPitchAndFamily=FF_DECORATIVE;
+
+		lf.lfCharSet=RUSSIAN_CHARSET;
+			
+
+		font=new CFont;
+		font->CreateFontIndirect(&lf);
+		//CFont *oldfont=showDC->SelectObject(font);
+		CFont *oldfont=memDC.SelectObject(font);
+
+		//showDC->SetTextColor(RGB(255,255,255));
+		memDC.SetTextColor(RGB(255,255,255));
+		int _Y_=show_y+ONE_LEN*Hei-lf.lfHeight*2;
+
+//		DrawGradientString(showDC, show_x+ ONE_LEN*Len, _Y_, k, RGB(255,0,0));
+//		DrawGradientString(showDC, show_x+ ONE_LEN*Len, _Y_+lf.lfHeight , k1, RGB(0,0,255));
+//		DrawGradientString(showDC, show_x+ ONE_LEN*Len, _Y_-lf.lfHeight , k2, RGB(0,255,255));
+//		DrawGradientString(showDC, show_x+ ONE_LEN*Len, _Y_-2*lf.lfHeight , k3, RGB
+
+	int x=DrawGradientString(&memDC, 0, 0, k, RGB(255,0,0));
+	DrawGradientString(&memDC, x+10, 0+0*lf.lfHeight , k1, RGB(0,0,255));
+	x=DrawGradientString(&memDC, 0, 0+1*lf.lfHeight , k2, RGB(0,255,255));
+	DrawGradientString(&memDC, GetPixelWidth()/2, 0+1*lf.lfHeight , k3, RGB(255,Speed*10, 255-Speed*10));
+	
+	//показываем стакан на экране
+	showDC->BitBlt(show_x,show_y,
+	ONE_LEN*Len ,
+	ONE_LEN*Hei, 
+	&memDC,0,0,
+	SRCCOPY);
+
+	//showDC->SelectObject(oldfont);
+	memDC.SelectObject(oldfont);
+
+	delete font;
+}
+
+//показать весь стакан в памяти и на экране
+void CGLASS::ReDraw()
+{
+	int len=GetPixelWidth(),
+		hei=GetPixelHeight();
+
+	memDC.BitBlt(0,0, 
+		len,hei,
+		&memDC,
+		len,0,
+		SRCCOPY);
+
+	showDC->BitBlt(len,hei/2, 
+		1024,
+		hei,
+		&memDC,
+		len*2,hei/2,
+		SRCCOPY);
+
+	showDC->FillSolidRect(len,hei/2,
+		1, hei/2, RGB(0,127,0));
+
+
+	for(int x=0; x<Len; x++)
+		for(int y=0; y<Hei; y++)
+			Show(x,y);
+}
+
+//показать весь стакан
+void CGLASS::Show()
+{
+	ReDraw();
+	ShowToScreen();
+}
+CGLASS::~CGLASS()
+{
+	delete [] Data;
+}
+
+//возвращает элемент
+BOX CGLASS::Read(int x, int y)
+{
+	if (x>=0 && x<Len)
+	{
+		if (y<0) return BOX(0);
+		if (y>=0 && y<Hei)
+		return Data[y*Len+x];
+	}
+
+	return BOX(1);
+}
+
+bool CGLASS::Write(int x, int y, BOX box)
+{
+	if (y<0) return true;
+
+	if ( (x>=0 && x<Len) && (y>=0 && y<Hei) )
+	{
+		Data[y*Len+x]=box;
+		return true;
+	}
+	else return false;
+
+}
+
+void nul(int &a)
+{
+	//if (a<0) a=0;
+}
+
+//показать ЭЛЕМЕНТ стакана 
+void CGLASS::Show(int x, int y)
+{
+	Show(x,y,Read(x,y));
+}
+
+CGLASS::ShowAbsolute(int x1, int y1, BOX bx)
+{
+	int ONE=ONE_LEN;
+
+	if (!bx)
+	{
+		//memDC.FillSolidRect(x1,y1, ONE,ONE, 0); //RGB(255,0,0));
+		return 0;
+	}
+
+	//else showDC->DrawIcon(x1,y1, hIcon); 
+	int R=GetRValue(bx),
+		B=GetBValue(bx), G=GetGValue(bx);
+
+	int r1,b1,g1;
+
+	r1=R == 0 ? 0 : 1;
+	b1=B == 0 ? 0 : 1;
+	g1=G == 0 ? 0 : 1;
+
+
+	//if (bx.type == 0)
+	int type=TypeBoxView;
+	if (type==0)
+	{
+		for(int i=0; i<=ONE/2; i++)
+		{
+			int a=255/ONE;
+			int b=255/ONE*2;
+
+			int eR1=R-r1*i*a,
+				eG1=G-g1*i*a,
+				eB1=B-b1*i*a,
+
+				eR2=-R+r1*i*b,
+				eG2=-G+g1*i*b,
+				eB2=-B+b1*i*b;
+
+			nul(eR1);
+			nul(eG1);
+			nul(eB1);
+			nul(eR2);
+			nul(eG2);
+			nul(eB2);
+
+			#define mac RGB(eR1,eG1,eB1)
+			#define mac2 RGB(eR2,eG2,eB2)
+			memDC.FillSolidRect(x1+i,y1+i, ONE-i*2,1, mac);
+			memDC.FillSolidRect(x1+i,y1+ONE-1-i, ONE-i*2,1, mac2);
+
+			memDC.FillSolidRect(x1+i,y1+i, 1,		 ONE-i*2, mac);
+			memDC.FillSolidRect(x1+ONE-1-i,y1+i, 1,ONE-i*2, mac2);
+		}
+	}
+	else if (type == 1)
+	{
+
+		#define mac RGB(R-r1*i*a,G-g1*i*a,B-b1*i*a)
+		#define mac2 RGB(-R+r1*i*b,-G+g1*i*b,-B+b1*i*b)
+
+		CBrush br;
+		br.CreateStockObject(NULL_BRUSH);
+		memDC.SelectObject(br);
+			//GetStockObject
+
+		for(int i=0; i<=ONE/2; i++)
+		{
+			//int b=255/ONE*2;
+			int a=255/ONE;
+			int b=255/ONE*2;
+		//CBrush *oldbr=memDC.SelectObject(&br);
+			CPen pen(PS_SOLID, 1, mac);
+	#define s 5
+			R-=s; G-=s; B-=s;
+			if (R <0) R=0;
+			if (G <0) G=0;
+			if (B <0) B=0;
+ 				
+				//RGB(-R+r1*i*b,-G+g1*i*b,-B+b1*i*b) 
+				
+				//);
+			CPen * oldpen=memDC.SelectObject(&pen);
+		memDC.Ellipse(x1+i,y1+i,x1+ONE-i,y1+ONE-i);
+			memDC.SelectObject(oldpen);
+		}
+	}
+	else if (type==2)
+	{
+		
+		for(int i=0; i<ONE; i++)
+		{
+			int a=255/ONE;
+			int b=255/ONE*2;
+			memDC.FillSolidRect(x1,y1+i, ONE,1, mac);
+		}
+	}
+
+	else //if (type==3)
+	{
+		memDC.FillSolidRect(x1,y1, ONE,ONE, bx.color);
+	}
+	/*else 
+	{
+		memDC.MoveTo(x1,y1);
+		memDC.LineTo(x1+ONE,y1);
+		memDC.LineTo(x1,y1+ONE);
+	}*/
+
+	return 0;
+}
+
+
+
+void CGLASS::Show(int x, int y, BOX bx)
+{
+
+	int x1=show_x+x*ONE_LEN,
+		y1=show_y+y*ONE_LEN;
+
+	ShowAbsolute(x1,y1, bx);
+
+}
+
+void ShowAnimate(CGLASS *glass, bool *state )
+{
+	DWORD StartTime=GetTickCount();
+
+	const max=355;
+	MOVEOBJ mo[max];
+	mo[0].glass=glass;
+	int i=0;
+	for(int x=0; x<glass->Len; x++)
+		for(int y=0; y<glass->Hei; y++)
+			if (glass->Read(x,y) &&
+								state[y]==true)
+		{
+		mo[i].x=x*glass->ONE_LEN;
+		mo[i].y=y*glass->ONE_LEN;
+		mo[i].Speedy=-rand(20)*0.1;
+		mo[i].Speedx=rand(10)*0.1;
+		mo[i].bx=glass->Read(x,y);
+		mo[i].Acceleratx=0;
+		mo[i].Acceleraty=0.02;
+		glass->Write(x,y,BOX(0));
+		i++;
+		if (i==max) { x=255; break;}
+	}
+	int real=i;
+
+
+	int maxframe=255;
+
+	for(int d=0; d<maxframe;d++)
+	{
+		glass->ReDraw();
+		int cnt=0;
+		for(i=0; i<max; i++)
+		{
+			mo[i].Show();
+		#define an  	mo[i].Animate();
+			an an an an
+		#undef an
+
+			if (mo[i].y> (glass->ONE_LEN*(glass->Hei+1)) ) cnt++;
+		}
+		if (cnt==real) break;
+		glass->ShowToScreen();
+		//Sleep(1);
+	}
+
+}
+
+void CGLASS::Scroll()
+{
+	bool *state=new bool[Hei];
+	for(int i=0; i<Hei; i++) state[i]=false;
+
+	int cnt2=0;
+	for(int y=0; y<Hei; y++)
+	{
+		int cnt=0;
+		for(int x=0; x<Len; x++)
+			if (Read(x,y)) cnt++;
+
+		if (cnt==Len) state[y]=true, cnt2++;
+	}
+
+	if (!cnt2) {delete state; 
+	
+			sndPlaySound("pop.wav",SND_ASYNC);
+	return;}
+
+		if( cnt2<4)
+						sndPlaySound("xplode2.wav",SND_ASYNC);
+		else
+			sndPlaySound("explode.wav",SND_ASYNC);
+
+
+	Lines+=cnt2;
+	if (cnt2==1) Score+=100;
+	if (cnt2==2) Score+=300;
+	if (cnt2==3) Score+=700;
+	if (cnt2 >= 4 )Score+=1500+(cnt2-4)*350;
+
+	//extern bool TimerStop;
+	//TimerStop=true;
+
+	int a1=rand()%2, a2=rand()%2, a3=rand()%2;
+	if (!a1 && !a2 && !a3) a1=1;
+
+/*	//анимация
+	for(int j=255; j>0; j-=10)
+	{
+		for(UINT x=0; x<Len; x++)
+		{
+			for(int i=0; i<Hei; i++)
+			{
+				if (state[i]==true)
+				{
+					BOX bx=Read(x,i);
+					int R=GetRValue(bx) == 0 ? 0:1,
+						G=GetGValue(bx)== 0 ? 0:1,
+						B=GetBValue(bx)== 0 ? 0:1;
+					Write(x,i,RGB(R*j+x, G*j+x, B*j+x));
+					//Write(x,i,RGB(R*(255-j),G*(255-j),
+					//B*(255-j)) );
+					Show(x,i);
+				}
+			}
+		}
+			Show();
+	Sleep(1);				
+	
+	}*/
+
+
+	//===============================
+	//ShowAnimate(this,state);
+
+	bool NeedAnimate=true;
+	if (NeedAnimate){
+	
+		CGLASS *glass=this;	
+
+		const max=400;
+	MOVEOBJ mo[max];
+	mo[0].glass=glass;
+	int i=0;
+	for(int x=0; x<glass->Len; x++)
+		for(int y=0; y<glass->Hei; y++)
+			if (glass->Read(x,y) &&
+								state[y]==true)
+				
+		{
+		mo[i].x=x*glass->ONE_LEN;
+		mo[i].y=y*glass->ONE_LEN;
+		mo[i].Speedy=-0.1-rand(30)*0.1;
+		mo[i].Speedx=0.2+rand(20)*0.1;
+		if (rand(2)) mo[i].Speedx*=-1;
+		mo[i].bx=glass->Read(x,y);
+		mo[i].Acceleratx=0;
+		mo[i].Acceleraty=0.02;
+		//glass->Write(x,y,0);
+		i++;
+		if (i==max) { x=255; break;}
+	}
+	int real=i;
+
+////////
+
+	for(y=0; y<Hei; y++)
+	{
+		if (state[y])
+		for(int x=0;x<Len;x++)
+			Write(x,y,BOX(0));
+	}
+
+
+	//////////
+
+	DWORD StartTime=GetTickCount();
+
+	ReDraw();
+	SaveBitmap();
+
+	for(int d=0; d<255;d++)
+	{
+	//////////
+
+	if (d==30) 
+	{
+	for(y=0; y<Hei; y++)
+	{
+		if (state[y])
+		{
+			//скролим
+				for(int y1=y; y1>=1; y1--)
+			for(int x1=0; x1<Len; x1++)
+					Write(x1,y1, Read(x1,y1-1));
+
+						//обнуляем верхнюю строку
+				for(int x1=0; x1<Len; x1++)
+			Write(x1,0,BOX(0));
+		}
+	}
+		ReDraw();
+		SaveBitmap();
+
+	}
+
+		///////////
+		//glass->ReDraw();
+		RestoreBitmap();
+		//ReDraw();
+
+		int cnt=0;
+		for(i=0; i<real; i++)
+		{
+			mo[i].Show();
+		#define an  	mo[i].Animate();
+			an an 
+ 		#undef an
+
+			if (mo[i].y> (glass->ONE_LEN*(glass->Hei+1)) ) cnt++;
+			
+			if (mo[i].x<0
+				//&& mo[i].y < glass->ONE_LEN*glass->Hei
+				) 
+			{
+				mo[i].Speedx *= -1 ;
+				mo[i].x=1;
+				//if (i==3) 
+				//sndPlaySound("pop2.wav",SND_ASYNC);
+			}
+				
+			if (mo[i].x> glass->ONE_LEN*(glass->Len-1) )
+				//&& mo[i].y < glass->ONE_LEN*glass->Hei) 
+			{
+				mo[i].x=glass->ONE_LEN*(glass->Len-1)-5;
+				mo[i].Speedx *= -1 ;
+				//sndPlaySound("pop2.wav",SND_ASYNC);
+			}
+		}
+		if (cnt==real) break;
+		glass->ShowToScreen();
+
+		Sleep(1);
+	}
+
+	if (d)
+	{
+	int fps=1000/d/(GetTickCount()-StartTime);
+	CString m;
+	m.Format("FPS=%i", fps);
+	showDC->SetTextColor(0);
+	showDC->TextOut(320,0, m);
+	//Sleep(1000);
+	}
+
+	double d_time=(GetTickCount()-StartTime)/1000.0;
+	Second+=d_time;
+
+	}
+/*	//===============================
+	for(y=0; y<Hei; y++)
+	{
+		if (state[y])
+		for(int x=0;x<Len;x++)
+			Write(x,y,BOX(0));
+	}
+
+	for(y=0; y<Hei; y++)
+	{
+		if (state[y])
+		{
+			//скролим
+				for(int y1=y; y1>=1; y1--)
+			for(int x1=0; x1<Len; x1++)
+					Write(x1,y1, Read(x1,y1-1));
+
+						//обнуляем верхнюю строку
+				for(int x1=0; x1<Len; x1++)
+			Write(x1,0,BOX(0));
+		}
+	}
+*/
+
+
+
+	//TimerStop=false;
+
+	delete state;
+}
+
+void CGLASS::SaveBitmap()
+{
+	memDC_Save.BitBlt(0,0,
+	ONE_LEN*Len ,
+	ONE_LEN*Hei, 
+	&memDC,0,0,
+	SRCCOPY);
+}
+
+void CGLASS::RestoreBitmap()
+{
+	memDC.BitBlt(0,0,
+	ONE_LEN*Len ,
+	ONE_LEN*Hei, 
+	&memDC_Save,0 ,0,
+	SRCCOPY);
+
+}
+
+int CGLASS::GetPixelWidth()
+{
+	return ONE_LEN*Len;
+}
+
+int CGLASS::GetPixelHeight()
+{
+	return ONE_LEN*Hei;
+}
+
