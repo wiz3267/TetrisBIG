@@ -273,7 +273,9 @@ CTetrisMFCView::CTetrisMFCView() //: fig(fig0)
 
 
 	fig[0].glass=glass;
-	fig[0].bx=RGB(128+rand(127),128+rand(127),128+rand(127));
+
+	//fig[0].bx=RGB(128+rand(127),128+rand(127),128+rand(127));
+	fig[0].bx=RGB(255,0,255);
 
 
 	rectable.glass=glass;
@@ -439,11 +441,13 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 			glass->Second++, k=0;
 	} else 	return;
 
+	//static int delay_xxx=0;
+
 	//вырезаем фигуру в старых координатах
 	fig[0].Cut(fig[0].x,fig[0].y);
 	
-
-	fig[0].dy++;
+	//fig[0].dy++;
+	fig[0].dy=1;
 
 	//перемещение влево-вправо
 	if (fig[0].NeedMoveLeft || fig[0].NeedMoveRight)
@@ -470,9 +474,13 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		{
 			//ставим фигуру
 			if (fig[0].dy!=0)
+			{
 				fig[0].Show();
+			}
 			else 
+			{
 				fig[0].Show(fig[0].x,fig[0].y-1);
+			}
 
 			Invalidate(false);
 			UpdateWindow();

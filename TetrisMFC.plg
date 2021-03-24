@@ -6,6 +6,52 @@
 --------------------Configuration: TetrisMFC - Win32 Release--------------------
 </h3>
 <h3>Command Lines</h3>
+Creating temporary file "C:\Users\Zorxor\AppData\Local\Temp\RSP52E8.tmp" with contents
+[
+/nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FR"Release/" /Fp"Release/TetrisMFC.pch" /Yu"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\github\TetrisBIG\TetrisBIG\TetrisMFCView.cpp"
+]
+Creating command line "cl.exe @C:\Users\Zorxor\AppData\Local\Temp\RSP52E8.tmp" 
+Creating temporary file "C:\Users\Zorxor\AppData\Local\Temp\RSP52E9.tmp" with contents
+[
+WINMM.LIB /nologo /subsystem:windows /incremental:no /pdb:"Release/TetrisBIG.pdb" /machine:I386 /out:"TetrisBIG.exe" 
+.\Release\DialogInputName.obj
+.\Release\FIGURE.obj
+.\Release\Glass.obj
+.\Release\Loading.obj
+.\Release\MainFrm.obj
+.\Release\MOVEOBJ.OBJ
+.\Release\RECTABLE.OBJ
+.\Release\SettingDialog2.obj
+.\Release\StdAfx.obj
+.\Release\TetrisMFC.obj
+.\Release\TetrisMFCDoc.obj
+.\Release\TetrisMFCView.obj
+.\Release\TetrisMFC.res
+]
+Creating command line "link.exe @C:\Users\Zorxor\AppData\Local\Temp\RSP52E9.tmp"
+<h3>Output Window</h3>
+Compiling...
+TetrisMFCView.cpp
+Linking...
+Creating temporary file "C:\Users\Zorxor\AppData\Local\Temp\RSP5D07.tmp" with contents
+[
+/nologo /o"Release/TetrisMFC.bsc" 
+.\Release\StdAfx.sbr
+.\Release\DialogInputName.sbr
+.\Release\FIGURE.sbr
+.\Release\Glass.sbr
+.\Release\Loading.sbr
+.\Release\MainFrm.sbr
+.\Release\MOVEOBJ.SBR
+.\Release\RECTABLE.SBR
+.\Release\SettingDialog2.sbr
+.\Release\TetrisMFC.sbr
+.\Release\TetrisMFCDoc.sbr
+.\Release\TetrisMFCView.sbr]
+Creating command line "bscmake.exe @C:\Users\Zorxor\AppData\Local\Temp\RSP5D07.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
 
 
 
