@@ -43,14 +43,11 @@
 #include <atlbase.h>
 #include "loading.h"
 
-#define TIMER_DEVIDE 25
+#define TIMER_DEVIDE 30
 
 //#define SHOW_LOADING
 
 CFIGURE fig[2];
-//bool NeedMoveDown=false;
-//bool NeedMoveLeft=false;
-//bool NeedMoveRight=false;
 
 
 
@@ -185,6 +182,30 @@ HANDLE hMailSlotServer;
 	};
 
 
+	bool buf14[]={
+		1,0,0,0,1,
+		1,1,1,1,1,
+		0,0,0,0,0,
+		0,0,0,0,0,
+		0,0,0,0,0
+	};
+
+	bool buf15[]={
+		1,0,0,1,
+		1,0,0,1,
+		1,1,1,1,
+		0,0,0,0
+	};
+
+	bool buf16[]={
+		1,0,0,0,1,
+		1,0,0,0,1,
+		1,1,1,1,1,
+		0,0,0,0,0,
+		0,0,0,0,0
+	};
+
+
 
 
 
@@ -215,6 +236,10 @@ CFIGURE
  fig11(4,4, buf11),
  fig12(4,4, buf12),
  fig13(3,3, buf13),
+
+ fig14(5,5, buf14),
+ fig15(4,4, buf15),
+ fig16(5,5, buf16),
 
  
 
@@ -445,7 +470,7 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		{
 			//ставим фигуру
 			if (fig[0].dy!=0)
-				fig[0].Show(fig[0].x,fig[0].y);
+				fig[0].Show();
 			else 
 				fig[0].Show(fig[0].x,fig[0].y-1);
 
@@ -478,7 +503,7 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 	//если более нижнее положение НЕ наложится на существующий массив
 	if (fig[0].Check(fig[0].x,fig[0].y+1) == true) 
 	{
-		fig[0].Show(fig[0].x,fig[0].y);
+		fig[0].Show();
 	}
 	
 	//иначе фигура села
@@ -486,7 +511,7 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 
 
 		fig[0].dy=0;
-		fig[0].Show(fig[0].x,fig[0].y); 
+		fig[0].Show(); 
 		OnChar('S', 0, 0);	//записываем состояние
 		//MessageBeep(1);
 
@@ -519,7 +544,8 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		
 		//алгоритм генерации новой фигуры
 		int prob=rand()%14;
-		
+
+		int oldx=fig[0].x;
 		//стандартные фигуры
 		if (prob==0)fig[0]=fig0;
 		else if (prob==1) fig[0]=fig1;
@@ -536,7 +562,11 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		else if (prob==11)fig[0]=fig11; 
 		else if (prob==12)fig[0]=fig12; 
 		else if (prob==13)fig[0]=fig13; 
+		else if (prob==14)fig[0]=fig14; 
+		else if (prob==15)fig[0]=fig15; 
+		else if (prob==16)fig[0]=fig16; 
 
+		fig[0].x=oldx;
 
 
 		//случайно поворачиваем
@@ -572,7 +602,7 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 			//Игра не прерывается
 			fig[0].y=5; fig[0].x=10;
 
-			/*fig[0].Show(fig[0].x,fig[0].y);
+			/*fig[0].Show();
 			glass->Show();
 			noTimer=true;
 			//Sleep(500);		
@@ -605,7 +635,7 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 			noTimer=false;
 			*/
 		}
-		else fig[0].Show(fig[0].x,fig[0].y);
+		else fig[0].Show();
 
 	
 		
@@ -804,7 +834,7 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 
 	if (fig[0].Check(fig[0].x,fig[0].y)) 
 	{
-		fig[0].Show(fig[0].x,fig[0].y);
+		fig[0].Show();
 		Invalidate(false);
 		UpdateWindow();
 	}
@@ -839,7 +869,7 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 		//возвращаем фигуру в прежнее положение
 		fig[0].x-=step;
 		fig[0].y-=stepy;
-		fig[0].Show(fig[0].x,fig[0].y);
+		fig[0].Show();
 
 		//MOVEOBJ obj;
 		

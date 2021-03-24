@@ -335,7 +335,7 @@ void CGLASS::ReDraw()
 			Show(x,y);
 
 		
-	if (ShowNextFigureFlag&1) NextFigure.DrawAnySize(ONE_LEN*8,ONE_LEN*2,ONE_LEN/2);
+	//if (ShowNextFigureFlag&1) NextFigure.DrawAnySize(ONE_LEN*8,ONE_LEN*2,ONE_LEN/2);
 }
 
 //показать весь стакан на экране

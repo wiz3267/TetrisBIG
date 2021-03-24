@@ -90,6 +90,13 @@ void CFIGURE::Rotate(bool sign)
 	delete newbox;
 }
 
+
+
+bool CFIGURE::Show()
+{
+	return Show(x,y);
+}
+
 //показывает фигуру в координатах x,y стакана
 // true - OK
 // false - либо фигура наложилась на другие
@@ -184,6 +191,7 @@ void CFIGURE::DrawAnySize(int x, int y, int size)
 }
 
 
+//конструктор копирования
 CFIGURE::CFIGURE(CFIGURE &fig)
 {
 	len=fig.len;
@@ -195,9 +203,12 @@ CFIGURE::CFIGURE(CFIGURE &fig)
 	bxData=new bool[fig.len*fig.hei];
 	CopyMemory(bxData, fig.bxData, fig.len*fig.hei);
 
-	NeedMoveDown=false;
-	NeedMoveLeft=false;
-	NeedMoveRight=false;
-	NeedMoveLeftRightCounter=0;
+	NeedMoveDown=fig.NeedMoveDown;
+	NeedMoveLeft=fig.NeedMoveLeft;
+	NeedMoveRight=fig.NeedMoveRight;
+	NeedMoveLeftRightCounter=fig.NeedMoveLeftRightCounter;
+
+	x=fig.x;
+	y=fig.y;
 
 }

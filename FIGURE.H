@@ -24,6 +24,7 @@ public:
 
 
 	static CGLASS * glass;	//привязка к стакану
+	bool Show();
 	bool Show(int x, int y);
 	bool * bxData;
 	int dy;	//задает дополнительное смещение вниз
