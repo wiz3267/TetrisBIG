@@ -19,10 +19,27 @@ static char THIS_FILE[]=__FILE__;
 
 CFIGURE::CFIGURE()
 {
+	x=0;
+	y=0;
+	
 	dy=0;
+	
 	hei=2;
 	len=2;
+
 	bxData=new bool[2*2];
+
+	bxData[0]=0;
+	bxData[1]=0;
+	bxData[2]=0;
+	bxData[3]=0;
+
+
+	NeedMoveDown=false;
+	NeedMoveLeft=false;
+	NeedMoveRight=false;
+	NeedMoveLeftRightCounter=0;
+
 }
 
 CGLASS * CFIGURE::glass;
@@ -44,6 +61,12 @@ CFIGURE::CFIGURE(int l, int h, bool *bxd)
 	hei=h;
 	bxData=new bool[len*hei];
 	CopyMemory(bxData, bxd, len*hei);
+
+	NeedMoveDown=false;
+	NeedMoveLeft=false;
+	NeedMoveRight=false;
+	NeedMoveLeftRightCounter=0;
+
 }
 
 //поворачивает фигуру
@@ -171,4 +194,10 @@ CFIGURE::CFIGURE(CFIGURE &fig)
 
 	bxData=new bool[fig.len*fig.hei];
 	CopyMemory(bxData, fig.bxData, fig.len*fig.hei);
+
+	NeedMoveDown=false;
+	NeedMoveLeft=false;
+	NeedMoveRight=false;
+	NeedMoveLeftRightCounter=0;
+
 }

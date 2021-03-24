@@ -6,13 +6,13 @@
 --------------------Configuration: TetrisMFC - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\Zorxor\AppData\Local\Temp\RSPFC45.tmp" with contents
+Creating temporary file "C:\Users\Zorxor\AppData\Local\Temp\RSP608D.tmp" with contents
 [
 /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"Debug/" /Fp"Debug/TetrisMFC.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\github\TetrisBIG\TetrisBIG\TetrisMFCView.cpp"
 ]
-Creating command line "cl.exe @C:\Users\Zorxor\AppData\Local\Temp\RSPFC45.tmp" 
-Creating temporary file "C:\Users\Zorxor\AppData\Local\Temp\RSPFC46.tmp" with contents
+Creating command line "cl.exe @C:\Users\Zorxor\AppData\Local\Temp\RSP608D.tmp" 
+Creating temporary file "C:\Users\Zorxor\AppData\Local\Temp\RSP608E.tmp" with contents
 [
 winmm.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/TetrisBIG_debug.pdb" /debug /machine:I386 /out:"TetrisBIG_debug.exe" /pdbtype:sept 
 .\Debug\DialogInputName.obj
@@ -29,12 +29,12 @@ winmm.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/TetrisBIG_debu
 .\Debug\TetrisMFCView.obj
 .\Debug\TetrisMFC.res
 ]
-Creating command line "link.exe @C:\Users\Zorxor\AppData\Local\Temp\RSPFC46.tmp"
+Creating command line "link.exe @C:\Users\Zorxor\AppData\Local\Temp\RSP608E.tmp"
 <h3>Output Window</h3>
 Compiling...
 TetrisMFCView.cpp
 Linking...
-Creating temporary file "C:\Users\Zorxor\AppData\Local\Temp\RSP2FB.tmp" with contents
+Creating temporary file "C:\Users\Zorxor\AppData\Local\Temp\RSP6762.tmp" with contents
 [
 /nologo /o"Debug/TetrisMFC.bsc" 
 .\Debug\StdAfx.sbr
@@ -49,7 +49,7 @@ Creating temporary file "C:\Users\Zorxor\AppData\Local\Temp\RSP2FB.tmp" with con
 .\Debug\TetrisMFC.sbr
 .\Debug\TetrisMFCDoc.sbr
 .\Debug\TetrisMFCView.sbr]
-Creating command line "bscmake.exe @C:\Users\Zorxor\AppData\Local\Temp\RSP2FB.tmp"
+Creating command line "bscmake.exe @C:\Users\Zorxor\AppData\Local\Temp\RSP6762.tmp"
 Creating browse info file...
 <h3>Output Window</h3>
 

@@ -16,6 +16,13 @@ class CFIGURE
 public:
 	int len,hei;
 	int x,y;		//координаты фигуры в стакане
+
+	bool NeedMoveDown;//=false;
+	bool NeedMoveLeft;//=false;
+	bool NeedMoveRight;//=false;
+	int NeedMoveLeftRightCounter;
+
+
 	static CGLASS * glass;	//привязка к стакану
 	bool Show(int x, int y);
 	bool * bxData;

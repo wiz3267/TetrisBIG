@@ -48,12 +48,10 @@
 //#define SHOW_LOADING
 
 CFIGURE fig[2];
-bool NeedMoveDown=false;
-bool NeedMoveLeft=false;
-bool NeedMoveRight=false;
+//bool NeedMoveDown=false;
+//bool NeedMoveLeft=false;
+//bool NeedMoveRight=false;
 
-int Ycntr=0;
-int NeedMoveLeftRightCounter=0;
 
 
 #ifdef _DEBUG
@@ -423,17 +421,17 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 	fig[0].dy++;
 
 	//перемещение влево-вправо
-	if (NeedMoveLeft || NeedMoveRight)
+	if (fig[0].NeedMoveLeft || fig[0].NeedMoveRight)
 	{
 /////////////////////////////////////////////////////////
-	if (NeedMoveLeftRightCounter++ >1)
+	if (fig[0].NeedMoveLeftRightCounter++ >1)
 	{
-		NeedMoveLeftRightCounter=0;
+		fig[0].NeedMoveLeftRightCounter=0;
 
 		int step=0, stepy=0;
 
-		if (NeedMoveLeft) step=-1;
-		if (NeedMoveRight) step=+1;
+		if (fig[0].NeedMoveLeft) step=-1;
+		if (fig[0].NeedMoveRight) step=+1;
 
 		//NeedMoveDown && NeedMoveLeft) stepy=-2;
 
@@ -466,7 +464,7 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 /////////////////////////////////////////////////////////	
 	}
 
-	if (fig[0].dy>=glass->GetOneLen() || NeedMoveDown)
+	if (fig[0].dy>=glass->GetOneLen() || fig[0].NeedMoveDown)
 	{
 		fig[0].y++;
 		fig[0].dy=0;
@@ -611,7 +609,7 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 
 	
 		
-		NeedMoveDown=false;	
+		fig[0].NeedMoveDown=false;	
 	}
 
 	RECT rt;
@@ -769,19 +767,19 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 		
 	}
 	
-	if (wp == VK_DOWN) NeedMoveDown=true;	
+	if (wp == VK_DOWN) fig[0].NeedMoveDown=true;	
 	
 	int K=255/3;
 
 	if (wp == VK_LEFT) {
-		NeedMoveLeft=true;
+		fig[0].NeedMoveLeft=true;
 
-		NeedMoveLeftRightCounter=K;
+		fig[0].NeedMoveLeftRightCounter=K;
 	}
 	
 	if (wp == VK_RIGHT) {
-		NeedMoveRight=true;
-		NeedMoveLeftRightCounter=K;
+		fig[0].NeedMoveRight=true;
+		fig[0].NeedMoveLeftRightCounter=K;
 	}
 
 	//??????????????
@@ -852,9 +850,9 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 
 void CTetrisMFCView::OnKeyUp(WPARAM wp, LPARAM lp)
 {
-	if (wp == VK_DOWN) NeedMoveDown=false;	
-	if (wp == VK_LEFT) NeedMoveLeft=false;	
-	if (wp == VK_RIGHT) NeedMoveRight=false;
+	if (wp == VK_DOWN) fig[0].NeedMoveDown=false;	
+	if (wp == VK_LEFT) fig[0].NeedMoveLeft=false;	
+	if (wp == VK_RIGHT) fig[0].NeedMoveRight=false;
 }
 
 void CTetrisMFCView::OnKillFocus(CWnd* pNewWnd) 
