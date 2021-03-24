@@ -13,20 +13,22 @@
 
 class CFIGURE  
 {
-	int len,hei;
 public:
-	CFIGURE(CFIGURE&fig);
-	void Draw(int x, int y);
-	void DrawAnySize(int x, int y, int size);
-	int dy;	//задает дополнительное смещение вниз
-	BOX bx;
-	bool Check(int x,int y);
-
-	void Rotate(bool sign);
-	bool Cut(int x,int y);
-	static CGLASS * glass;
+	int len,hei;
+	int x,y;		//координаты фигуры в стакане
+	static CGLASS * glass;	//привязка к стакану
 	bool Show(int x, int y);
 	bool * bxData;
+	int dy;	//задает дополнительное смещение вниз
+	BOX bx;
+
+	void Draw(int x, int y);
+	void DrawAnySize(int x, int y, int size);
+	bool Check(int x,int y);
+	void Rotate(bool sign);
+	bool Cut(int x,int y);
+
+	CFIGURE(CFIGURE&fig);
 	CFIGURE(int len, int hei, bool * bxData);
 	CFIGURE();
 	virtual ~CFIGURE();

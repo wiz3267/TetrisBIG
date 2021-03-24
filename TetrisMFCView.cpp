@@ -47,6 +47,15 @@
 
 //#define SHOW_LOADING
 
+CFIGURE fig[2];
+bool NeedMoveDown=false;
+bool NeedMoveLeft=false;
+bool NeedMoveRight=false;
+
+int Ycntr=0;
+int NeedMoveLeftRightCounter=0;
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -227,8 +236,9 @@ int rand(int n)
 /////////////////////////////////////////////////////////////////////////////
 // CTetrisMFCView construction/destruction
 
-CTetrisMFCView::CTetrisMFCView() : fig(fig0)
+CTetrisMFCView::CTetrisMFCView() //: fig(fig0)
 {
+	fig[0]=fig0;
 	// TODO: add construction code here
 
 	srand(GetTickCount());
@@ -239,10 +249,10 @@ CTetrisMFCView::CTetrisMFCView() : fig(fig0)
 	glass= new CGLASS(80,50,NULL);
 
 
-	fig.glass=glass;
-	fig.bx=RGB(rand()%255,rand()%255,rand()%255);
+	fig[0].glass=glass;
+	fig[0].bx=RGB(128+rand(127),128+rand(127),128+rand(127));
 
-	if (!fig.bx) fig.bx=255;
+
 	rectable.glass=glass;
 	
 }
@@ -325,12 +335,6 @@ CTetrisMFCDoc* CTetrisMFCView::GetDocument() // non-debug version is inline
 /////////////////////////////////////////////////////////////////////////////
 // CTetrisMFCView message handlers
 
-bool 
- NeedMoveDown=false, NeedMoveLeft=false, NeedMoveRight=false;
-int Ycntr=0;
-int x=0,y=0;
-
-int NeedMoveLeftRightCounter=0;
 void CTetrisMFCView::OnTimer(UINT nIDEvent) 
 { 
 
@@ -413,10 +417,10 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 	} else 	return;
 
 	//вырезаем фигуру в старых координатах
-	fig.Cut(x,y);
+	fig[0].Cut(fig[0].x,fig[0].y);
 	
 
-	fig.dy++;
+	fig[0].dy++;
 
 	//перемещение влево-вправо
 	if (NeedMoveLeft || NeedMoveRight)
@@ -433,19 +437,19 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 
 		//NeedMoveDown && NeedMoveLeft) stepy=-2;
 
-		x+=step;
+		fig[0].x+=step;
 		//если удалось поставить
 		int dy=0;
 
-		if (fig.dy!=0) dy=1;
+		if (fig[0].dy!=0) dy=1;
 		
-		if (fig.Check(x,y+dy)) 
+		if (fig[0].Check(fig[0].x,fig[0].y+dy)) 
 		{
 			//ставим фигуру
-			if (fig.dy!=0)
-				fig.Show(x,y);
+			if (fig[0].dy!=0)
+				fig[0].Show(fig[0].x,fig[0].y);
 			else 
-				fig.Show(x,y-1);
+				fig[0].Show(fig[0].x,fig[0].y-1);
 
 			Invalidate(false);
 			UpdateWindow();
@@ -453,19 +457,19 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 	}
 	//невозможно отобразить
 	else {
-		x-=step;
-		y-=stepy;
+		fig[0].x-=step;
+		fig[0].y-=stepy;
 		//
-		//fig.Show(x,y);
+		//fig[0].Show(x,y);
 	}
 	}
 /////////////////////////////////////////////////////////	
 	}
 
-	if (fig.dy>=glass->GetOneLen() || NeedMoveDown)
+	if (fig[0].dy>=glass->GetOneLen() || NeedMoveDown)
 	{
-		y++;
-		fig.dy=0;
+		fig[0].y++;
+		fig[0].dy=0;
 	}
 
 
@@ -474,17 +478,17 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 
 
 	//если более нижнее положение НЕ наложится на существующий массив
-	if (fig.Check(x,y+1) == true) 
+	if (fig[0].Check(fig[0].x,fig[0].y+1) == true) 
 	{
-		fig.Show(x,y);
+		fig[0].Show(fig[0].x,fig[0].y);
 	}
 	
 	//иначе фигура села
 	else {
 
 
-		fig.dy=0;
-		fig.Show(x,y); 
+		fig[0].dy=0;
+		fig[0].Show(fig[0].x,fig[0].y); 
 		OnChar('S', 0, 0);	//записываем состояние
 		//MessageBeep(1);
 
@@ -499,18 +503,18 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		//!!НАСТРОЙКИ!!!
 		/*int prob=rand()%100;
 		
-		if (prob>60)fig=fig3;
-		else if (prob>70) fig=fig2;
-		else if (prob>80)fig=fig1; 
-		else if (prob>85)fig=fig5; 		
+		if (prob>60)fig[0]=fig3;
+		else if (prob>70) fig[0]=fig2;
+		else if (prob>80)fig[0]=fig1; 
+		else if (prob>85)fig[0]=fig5; 		
 		
-		//else if (prob>90)fig=fig6; 
-		else if (prob>91)fig=fig7; 
-		else if (prob>92)fig=fig8; 
-		else if (prob>93)fig=fig9; 
-		else if (prob>93)fig=fig10; 
+		//else if (prob>90)fig[0]=fig6; 
+		else if (prob>91)fig[0]=fig7; 
+		else if (prob>92)fig[0]=fig8; 
+		else if (prob>93)fig[0]=fig9; 
+		else if (prob>93)fig[0]=fig10; 
 
-		else fig=fig4;*/
+		else fig[0]=fig4;*/
 
 
 		//!!НАСТРОЙКИ!!!
@@ -519,29 +523,29 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		int prob=rand()%14;
 		
 		//стандартные фигуры
-		if (prob==0)fig=fig0;
-		else if (prob==1) fig=fig1;
-		else if (prob==2)fig=fig2; 
-		else if (prob==3)fig=fig3; 		
-		else if (prob==4) fig=fig4;
+		if (prob==0)fig[0]=fig0;
+		else if (prob==1) fig[0]=fig1;
+		else if (prob==2)fig[0]=fig2; 
+		else if (prob==3)fig[0]=fig3; 		
+		else if (prob==4) fig[0]=fig4;
 		
 
 		//нестандартные
-		else if (prob==7)fig=fig7; 
-		else if (prob==8)fig=fig8; 
-		else if (prob==9)fig=fig9; 
-		else if (prob==10)fig=fig10; 
-		else if (prob==11)fig=fig11; 
-		else if (prob==12)fig=fig12; 
-		else if (prob==13)fig=fig13; 
+		else if (prob==7)fig[0]=fig7; 
+		else if (prob==8)fig[0]=fig8; 
+		else if (prob==9)fig[0]=fig9; 
+		else if (prob==10)fig[0]=fig10; 
+		else if (prob==11)fig[0]=fig11; 
+		else if (prob==12)fig[0]=fig12; 
+		else if (prob==13)fig[0]=fig13; 
 
 
 
 		//случайно поворачиваем
-		for(int n=0; n< rand(4); n++) fig.Rotate(true);
+		for(int n=0; n< rand(4); n++) fig[0].Rotate(true);
 
 		if (rand(40)==39) {
-			fig=fig_small;
+			fig[0]=fig_small;
 		}
 
 		//x=glass->Len/2;
@@ -549,15 +553,15 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 
 		//int a1=rand(2), a2=rand(2), a3=rand(2);
 		//if (! (a1+a2+a3) ) a1=1;
-		//fig.bx.color=RGB(a1*255,a2*255,a3*255);
+		//fig[0].bx.color=RGB(a1*255,a2*255,a3*255);
 		
 		//Zorxor 
 		int a1=rand()%255, a2=rand()%255, a3=rand()%255;
-		fig.bx.color=RGB(a1,a2,a3);
+		fig[0].bx.color=RGB(a1,a2,a3);
 		
-		fig.bx.type=rand()%5;
+		fig[0].bx.type=rand()%5;
 	
-		y=5;
+		fig[0].y=5;
 
 		//Beep(600, 100);
 		
@@ -565,12 +569,12 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		
 		
 
-		if (!fig.Check(x,y)) 
+		if (!fig[0].Check(fig[0].x,fig[0].y)) 
 		{
 			//Игра не прерывается
-			y=5; x=10;
+			fig[0].y=5; fig[0].x=10;
 
-			/*fig.Show(x,y);
+			/*fig[0].Show(fig[0].x,fig[0].y);
 			glass->Show();
 			noTimer=true;
 			//Sleep(500);		
@@ -603,7 +607,7 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 			noTimer=false;
 			*/
 		}
-		else fig.Show(x,y);
+		else fig[0].Show(fig[0].x,fig[0].y);
 
 	
 		
@@ -704,7 +708,7 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 	if (wp==VK_F7)
 	{
 		//????? тест разлета фигур
-		fig.Cut(x,y);
+		fig[0].Cut(fig[0].x,fig[0].y);
 
 		glass->showDC=GetDC();
 		glass->Scroll(1);			//скорллим и уничтожаем линии
@@ -786,38 +790,38 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 
 
 	//выразем фигуру по старым координатам
-	fig.Cut(x,y);
+	fig[0].Cut(fig[0].x,fig[0].y);
 
 	int step=0, stepy=0;
 //	if (wp==VK_LEFT) step=-1;
 //	else if (wp==VK_RIGHT) step=+1;
 	//else if (nChar==`'5') stepy=+1;
-	if (wp==VK_UP) fig.Rotate(true);
-	//else if (nChar=='9') fig.Rotate(false);
+	if (wp==VK_UP) fig[0].Rotate(true);
+	//else if (nChar=='9') fig[0].Rotate(false);
 	else return;
 
 	//
-	x+=step;
-	y+=stepy;
+	fig[0].x+=step;
+	fig[0].y+=stepy;
 
-	if (fig.Check(x,y)) 
+	if (fig[0].Check(fig[0].x,fig[0].y)) 
 	{
-		fig.Show(x,y);
+		fig[0].Show(fig[0].x,fig[0].y);
 		Invalidate(false);
 		UpdateWindow();
 	}
-	else if (fig.Check(x-1,y))
+	else if (fig[0].Check(fig[0].x-1,fig[0].y))
 	{
-		fig.Show(x-1,y);
-		x--;
+		fig[0].Show(fig[0].x-1,fig[0].y);
+		fig[0].x--;
 
 		Invalidate(false);
 		UpdateWindow();
 	}
-	else if (fig.Check(x+1,y))
+	else if (fig[0].Check(fig[0].x+1,fig[0].y))
 	{
-		fig.Show(x+1,y);
-		x++;
+		fig[0].Show(fig[0].x+1,fig[0].y);
+		fig[0].x++;
 
 		Invalidate(false);
 		UpdateWindow();
@@ -829,15 +833,15 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 		//обратно вращаем
 		if (wp==VK_UP) 
 		{
-			fig.Rotate(true);
-			fig.Rotate(true);
-			fig.Rotate(true);
+			fig[0].Rotate(true);
+			fig[0].Rotate(true);
+			fig[0].Rotate(true);
 		}
-		//if (nChar=='9') fig.Rotate(true);
+		//if (nChar=='9') fig[0].Rotate(true);
 		//возвращаем фигуру в прежнее положение
-		x-=step;
-		y-=stepy;
-		fig.Show(x,y);
+		fig[0].x-=step;
+		fig[0].y-=stepy;
+		fig[0].Show(fig[0].x,fig[0].y);
 
 		//MOVEOBJ obj;
 		
@@ -880,7 +884,7 @@ void CTetrisMFCView::OnSetFocus(CWnd* pOldWnd)
 void CTetrisMFCView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
 {
 
-	/*if (nChar=='s' || nChar=='S' || nChar=='ы' || nChar=='Ы')
+	if (nChar=='s' || nChar=='S' || nChar=='ы' || nChar=='Ы')
 	{
 		SaveTetris();
 
@@ -889,7 +893,7 @@ void CTetrisMFCView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	if (nChar=='l' || nChar=='L' || nChar=='д' || nChar=='Д')
 	{
 		LoadTetris();
-	}*/
+	}
 
 
 	/*

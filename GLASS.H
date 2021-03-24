@@ -36,9 +36,7 @@ public:
 	int Speed;
 	void RestoreBitmap();
 	void SaveBitmap();
-	int Lines,
-	TypeBoxView,
-	Score;
+	int Lines, TypeBoxView, Score;
 	double Second;
 	CString Name;
 	void Scroll(bool force);

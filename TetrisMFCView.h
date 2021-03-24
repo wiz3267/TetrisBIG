@@ -48,7 +48,7 @@ public:
 	void OnKeyDown(WPARAM wp, LPARAM lp);
 	void OnKeyUp(WPARAM wp, LPARAM lp);
 	void SetGameSpeed();
-	CFIGURE fig;
+//	CFIGURE fig;
 	virtual ~CTetrisMFCView();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
