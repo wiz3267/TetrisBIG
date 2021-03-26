@@ -72,7 +72,6 @@ CFIGURE::CFIGURE(int l, int h, bool *bxd)
 //поворачивает фигуру
 void CFIGURE::Rotate(bool sign)
 {
-//	return;
 	bool *newbox=new bool[len*hei];
 	
     for(int y=0; y<hei; y++)

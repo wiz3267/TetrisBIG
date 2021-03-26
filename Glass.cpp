@@ -259,7 +259,7 @@ void CGLASS::ShowToScreen()
 	x=DrawGradientString(&memDC, x+Z, 0*lf.lfHeight , k2, RGB(0,255,255));
 	x=DrawGradientString(&memDC, x+Z, 0*lf.lfHeight , k4, RGB(0,255,255));
 	
-	DrawGradientString(&memDC, Z+Z, 40  , "F1 help         F2 clear        F11 F12 change(- +) view" , RGB(0,255,255));
+	DrawGradientString(&memDC, Z+Z, 40  , "F1 help         F2 clear        F3 stop    F11 F12 change(- +) view" , RGB(0,255,255));
 
 
 	

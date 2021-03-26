@@ -49,6 +49,12 @@
 
 CFIGURE fig[2];
 
+int FIGURE_INDEX=0;
+
+#define MODE_AUTODOWN 1
+#define MODE_AUTOCLIP 2
+
+int GameMode = MODE_AUTODOWN;
 
 
 #ifdef _DEBUG
@@ -250,6 +256,7 @@ fig_death(4,4, buf_death);
 int Pause=false;
 
 int ShowNextFigureFlag=1;
+int NeedFixFigure=0;	//нужно зафиксировать фигуру
 
 
 int rand(int n)
@@ -262,6 +269,8 @@ int rand(int n)
 CTetrisMFCView::CTetrisMFCView() //: fig(fig0)
 {
 	fig[0]=fig0;
+	fig[1]=fig0;
+
 	// TODO: add construction code here
 
 	srand(GetTickCount());
@@ -272,10 +281,10 @@ CTetrisMFCView::CTetrisMFCView() //: fig(fig0)
 	glass= new CGLASS(80,50,NULL);
 
 
-	fig[0].glass=glass;
+	fig[FIGURE_INDEX].glass=glass;
 
-	//fig[0].bx=RGB(128+rand(127),128+rand(127),128+rand(127));
-	fig[0].bx=RGB(255,0,255);
+	//fig[FIGURE_INDEX].bx=RGB(128+rand(127),128+rand(127),128+rand(127));
+	fig[FIGURE_INDEX].bx=RGB(255,0,255);
 
 
 	rectable.glass=glass;
@@ -363,6 +372,7 @@ CTetrisMFCDoc* CTetrisMFCView::GetDocument() // non-debug version is inline
 void CTetrisMFCView::OnTimer(UINT nIDEvent) 
 { 
 
+
 	//MoveWindow(0,0,1024,768,0);
 	//
 	static int ccc=0;
@@ -374,6 +384,8 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		OnChar('L', 0, 0);
 
 	}
+
+	
 	//if ( (ccc%20)==5 )
 	//{
 	
@@ -444,88 +456,110 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 	//static int delay_xxx=0;
 
 	//вырезаем фигуру в старых координатах
-	fig[0].Cut(fig[0].x,fig[0].y);
+	fig[FIGURE_INDEX].Cut(fig[FIGURE_INDEX].x,fig[FIGURE_INDEX].y);
 	
-	//fig[0].dy++;
-	fig[0].dy=1;
+	if (GameMode & MODE_AUTODOWN)
+	{
+		fig[FIGURE_INDEX].dy++;	//чтобы падала автоматически
+	}
+	else
+	{
+		fig[FIGURE_INDEX].dy=1;
+	}
+
+	int stepx=0, stepy=0;
 
 	//перемещение влево-вправо
-	if (fig[0].NeedMoveLeft || fig[0].NeedMoveRight)
+	if (fig[FIGURE_INDEX].NeedMoveLeft || fig[FIGURE_INDEX].NeedMoveRight)
 	{
-/////////////////////////////////////////////////////////
-	if (fig[0].NeedMoveLeftRightCounter++ >1)
-	{
-		fig[0].NeedMoveLeftRightCounter=0;
-
-		int step=0, stepy=0;
-
-		if (fig[0].NeedMoveLeft) step=-1;
-		if (fig[0].NeedMoveRight) step=+1;
-
-		//NeedMoveDown && NeedMoveLeft) stepy=-2;
-
-		fig[0].x+=step;
-		//если удалось поставить
-		int dy=0;
-
-		if (fig[0].dy!=0) dy=1;
-		
-		if (fig[0].Check(fig[0].x,fig[0].y+dy)) 
+		/////////////////////////////////////////////////////////
+		if (fig[FIGURE_INDEX].NeedMoveLeftRightCounter++ >1)
 		{
-			//ставим фигуру
-			if (fig[0].dy!=0)
-			{
-				fig[0].Show();
-			}
-			else 
-			{
-				fig[0].Show(fig[0].x,fig[0].y-1);
-			}
+			fig[FIGURE_INDEX].NeedMoveLeftRightCounter=0;
 
-			Invalidate(false);
-			UpdateWindow();
-			return;
-	}
-	//невозможно отобразить
-	else {
-		fig[0].x-=step;
-		fig[0].y-=stepy;
-		//
-		//fig[0].Show(x,y);
-	}
-	}
+			if (fig[FIGURE_INDEX].NeedMoveLeft) stepx=-1;
+			if (fig[FIGURE_INDEX].NeedMoveRight) stepx=+1;
+
+			//NeedMoveDown && NeedMoveLeft) stepy=-2;
+
+			fig[FIGURE_INDEX].x+=stepx;
+			//если удалось поставить
+			//int dy=0;
+
+			//if (fig[FIGURE_INDEX].dy!=0) dy=1;
+			
+			/*
+			//происходит наложение ? (невозможно фигуру подвинуть)
+			if (fig[FIGURE_INDEX].Check(fig[FIGURE_INDEX].x,fig[FIGURE_INDEX].y+dy)) 
+			{
+				//ставим фигуру
+				if (fig[FIGURE_INDEX].dy!=0)
+				{
+					fig[FIGURE_INDEX].Show();
+				}
+				else 
+				{
+					fig[FIGURE_INDEX].Show(fig[FIGURE_INDEX].x,fig[FIGURE_INDEX].y-1);
+				}
+
+				Invalidate(false);
+				UpdateWindow();
+				return;
+				
+			}
+			//невозможно отобразить
+			else {
+				fig[FIGURE_INDEX].x-=step;
+				fig[FIGURE_INDEX].y-=stepy;
+				//
+				//fig[FIGURE_INDEX].Show(x,y);
+				//?????????????
+			}
+			*/
+		}
 /////////////////////////////////////////////////////////	
 	}
 
-	if (fig[0].dy>=glass->GetOneLen() || fig[0].NeedMoveDown)
+	if (fig[FIGURE_INDEX].dy>=glass->GetOneLen() || fig[FIGURE_INDEX].NeedMoveDown)
 	{
-		fig[0].y++;
-		fig[0].dy=0;
+		stepy=1;
+		fig[FIGURE_INDEX].dy=0;
 	}
 
+	fig[FIGURE_INDEX].y+=stepy;
 
-	if (settings.m_all_level==TRUE) glass->Speed= 1+glass->Score/2000;
-	else glass->Speed= settings.m_level;
 
+	//if (settings.m_all_level==TRUE) glass->Speed= 1+glass->Score/2000;
+	//else glass->Speed= settings.m_level;
+
+	int overlay=0;
 
 	//если более нижнее положение НЕ наложится на существующий массив
-	if (fig[0].Check(fig[0].x,fig[0].y+1) == true) 
+	if (!fig[FIGURE_INDEX].Check(fig[FIGURE_INDEX].x,fig[FIGURE_INDEX].y))
 	{
-		fig[0].Show();
+		fig[FIGURE_INDEX].x-=stepx;
+		fig[FIGURE_INDEX].y-=stepy;
+		overlay=1;
 	}
+
+	//?????
+	fig[FIGURE_INDEX].Show();
 	
 	//иначе фигура села
-	else {
+	//if (fig[FIGURE_INDEX].Check(fig[FIGURE_INDEX].x,fig[FIGURE_INDEX].y+1 || NeedFigFigure)
+	if (NeedFixFigure || overlay)
+	{ 
 
+		NeedFixFigure=false;
 
-		fig[0].dy=0;
-		fig[0].Show(); 
+		fig[FIGURE_INDEX].dy=0;
+		fig[FIGURE_INDEX].Show(); 
 		OnChar('S', 0, 0);	//записываем состояние
 		//MessageBeep(1);
 
 		//glass->Show();
 		glass->showDC=GetDC();
-		glass->Scroll(0);			//скорллим и уничтожаем линии
+		glass->Scroll(0);			//тест скорллим и уничтожаем линии
 
 		ReleaseDC(glass->showDC);
 
@@ -553,7 +587,7 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		//алгоритм генерации новой фигуры
 		int prob=rand()%14;
 
-		int oldx=fig[0].x;
+		int oldx=fig[FIGURE_INDEX].x;
 		//стандартные фигуры
 		if (prob==0)fig[0]=fig0;
 		else if (prob==1) fig[0]=fig1;
@@ -574,11 +608,11 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		else if (prob==15)fig[0]=fig15; 
 		else if (prob==16)fig[0]=fig16; 
 
-		fig[0].x=oldx;
+		fig[FIGURE_INDEX].x=oldx;
 
 
 		//случайно поворачиваем
-		for(int n=0; n< rand(4); n++) fig[0].Rotate(true);
+		for(int n=0; n< rand(4); n++) fig[FIGURE_INDEX].Rotate(true);
 
 		if (rand(40)==39) {
 			fig[0]=fig_small;
@@ -589,15 +623,15 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 
 		//int a1=rand(2), a2=rand(2), a3=rand(2);
 		//if (! (a1+a2+a3) ) a1=1;
-		//fig[0].bx.color=RGB(a1*255,a2*255,a3*255);
+		//fig[FIGURE_INDEX].bx.color=RGB(a1*255,a2*255,a3*255);
 		
 		//Zorxor 
-		int a1=rand()%255, a2=rand()%255, a3=rand()%255;
-		fig[0].bx.color=RGB(a1,a2,a3);
+		int a1=rand(255), a2=rand(255), a3=rand(255);
+		fig[FIGURE_INDEX].bx.color=RGB(a1,a2,a3);
 		
-		fig[0].bx.type=rand()%5;
+		fig[FIGURE_INDEX].bx.type=rand()%5;
 	
-		fig[0].y=5;
+		fig[FIGURE_INDEX].y=5;
 
 		//Beep(600, 100);
 		
@@ -605,12 +639,12 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		
 		
 
-		if (!fig[0].Check(fig[0].x,fig[0].y)) 
+		if (!fig[FIGURE_INDEX].Check(fig[FIGURE_INDEX].x,fig[FIGURE_INDEX].y)) 
 		{
 			//Игра не прерывается
-			fig[0].y=5; fig[0].x=10;
+			fig[FIGURE_INDEX].y=5; fig[FIGURE_INDEX].x=10;
 
-			/*fig[0].Show();
+			/*fig[FIGURE_INDEX].Show();
 			glass->Show();
 			noTimer=true;
 			//Sleep(500);		
@@ -643,11 +677,11 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 			noTimer=false;
 			*/
 		}
-		else fig[0].Show();
+		else fig[FIGURE_INDEX].Show();
 
 	
 		
-		fig[0].NeedMoveDown=false;	
+		fig[FIGURE_INDEX].NeedMoveDown=false;	
 	}
 
 	RECT rt;
@@ -675,6 +709,10 @@ void CTetrisMFCView::OnTimer(UINT nIDEvent)
 		oldScore=glass->Score;
 		glass->LoadNextBackground();
 	}
+
+
+	//FIGURE_INDEX++;
+	//if (FIGURE_INDEX>=2) FIGURE_INDEX=0;
 
 	
 	OnLButtonDown(0,CPoint(0,0));
@@ -744,7 +782,7 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 	if (wp==VK_F7)
 	{
 		//????? тест разлета фигур
-		fig[0].Cut(fig[0].x,fig[0].y);
+		fig[FIGURE_INDEX].Cut(fig[FIGURE_INDEX].x,fig[FIGURE_INDEX].y);
 
 		glass->showDC=GetDC();
 		glass->Scroll(1);			//скорллим и уничтожаем линии
@@ -763,12 +801,19 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 	{
 		char *help=
 		"F1 help\n"
+		"F3 stop\n"
 		"F2 clear\n"
 		"F11 F12 change view\n"
 		;
 
 		MessageBox(help,"help");
 	}
+
+	if (wp==VK_F3)
+	{
+		GameMode^=MODE_AUTODOWN;
+	}
+
 
 	if (wp==VK_F11)
 	{
@@ -805,20 +850,23 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 		
 	}
 	
-	if (wp == VK_DOWN) fig[0].NeedMoveDown=true;	
-	
-	int K=255/3;
+	//if (FIGURE_INDEX==0)
+	//{
+		if (wp == VK_DOWN) fig[FIGURE_INDEX].NeedMoveDown=true;	
+		
+		int K=255/3;
 
-	if (wp == VK_LEFT) {
-		fig[0].NeedMoveLeft=true;
+		if (wp == VK_LEFT) {
+			fig[FIGURE_INDEX].NeedMoveLeft=true;
 
-		fig[0].NeedMoveLeftRightCounter=K;
-	}
-	
-	if (wp == VK_RIGHT) {
-		fig[0].NeedMoveRight=true;
-		fig[0].NeedMoveLeftRightCounter=K;
-	}
+			fig[FIGURE_INDEX].NeedMoveLeftRightCounter=K;
+		}
+		
+		if (wp == VK_RIGHT) {
+			fig[FIGURE_INDEX].NeedMoveRight=true;
+			fig[FIGURE_INDEX].NeedMoveLeftRightCounter=K;
+		}
+	//}
 
 	//??????????????
 	if (wp == VK_PAUSE) Pause^=1;
@@ -826,38 +874,66 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 
 
 	//выразем фигуру по старым координатам
-	fig[0].Cut(fig[0].x,fig[0].y);
+	fig[FIGURE_INDEX].Cut(fig[FIGURE_INDEX].x,fig[FIGURE_INDEX].y);
 
 	int step=0, stepy=0;
 //	if (wp==VK_LEFT) step=-1;
 //	else if (wp==VK_RIGHT) step=+1;
 	//else if (nChar==`'5') stepy=+1;
-	if (wp==VK_UP) fig[0].Rotate(true);
-	//else if (nChar=='9') fig[0].Rotate(false);
-	else return;
+	if (wp==VK_SPACE)
+	{
+		//fig[FIGURE_INDEX].Rotate(true);
+		NeedFixFigure=1;
+	}
+
+
+	int rotate=0;
+	if (wp==VK_CONTROL)
+	{
+		//fig[FIGURE_INDEX].Rotate(true);
+		//rotate=1;
+
+		stepy=-1;
+	}
+
+	
+
+	if (wp==VK_UP) 
+	{
+		
+		fig[FIGURE_INDEX].Rotate(true);
+		rotate=1;
+		
+		//stepy=-1;
+
+		//fig[FIGURE_INDEX].y--;	
+	}
+	
+	//else if (nChar=='9') fig[FIGURE_INDEX].Rotate(false);
+	//else return;
 
 	//
-	fig[0].x+=step;
-	fig[0].y+=stepy;
+	fig[FIGURE_INDEX].x+=step;
+	fig[FIGURE_INDEX].y+=stepy;
 
-	if (fig[0].Check(fig[0].x,fig[0].y)) 
+	if (fig[FIGURE_INDEX].Check(fig[FIGURE_INDEX].x,fig[FIGURE_INDEX].y)) 
 	{
-		fig[0].Show();
+		fig[FIGURE_INDEX].Show();
 		Invalidate(false);
 		UpdateWindow();
 	}
-	else if (fig[0].Check(fig[0].x-1,fig[0].y))
+	else if (fig[FIGURE_INDEX].Check(fig[FIGURE_INDEX].x-1,fig[FIGURE_INDEX].y))
 	{
-		fig[0].Show(fig[0].x-1,fig[0].y);
-		fig[0].x--;
+		fig[FIGURE_INDEX].Show(fig[FIGURE_INDEX].x-1,fig[FIGURE_INDEX].y);
+		fig[FIGURE_INDEX].x--;
 
 		Invalidate(false);
 		UpdateWindow();
 	}
-	else if (fig[0].Check(fig[0].x+1,fig[0].y))
+	else if (fig[FIGURE_INDEX].Check(fig[FIGURE_INDEX].x+1,fig[FIGURE_INDEX].y))
 	{
-		fig[0].Show(fig[0].x+1,fig[0].y);
-		fig[0].x++;
+		fig[FIGURE_INDEX].Show(fig[FIGURE_INDEX].x+1,fig[FIGURE_INDEX].y);
+		fig[FIGURE_INDEX].x++;
 
 		Invalidate(false);
 		UpdateWindow();
@@ -867,17 +943,17 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 	else {
 
 		//обратно вращаем
-		if (wp==VK_UP) 
+		if (rotate) 
 		{
-			fig[0].Rotate(true);
-			fig[0].Rotate(true);
-			fig[0].Rotate(true);
+			fig[FIGURE_INDEX].Rotate(true);
+			fig[FIGURE_INDEX].Rotate(true);
+			fig[FIGURE_INDEX].Rotate(true);
 		}
-		//if (nChar=='9') fig[0].Rotate(true);
+		//if (nChar=='9') fig[FIGURE_INDEX].Rotate(true);
 		//возвращаем фигуру в прежнее положение
-		fig[0].x-=step;
-		fig[0].y-=stepy;
-		fig[0].Show();
+		fig[FIGURE_INDEX].x-=step;
+		fig[FIGURE_INDEX].y-=stepy;
+		fig[FIGURE_INDEX].Show();
 
 		//MOVEOBJ obj;
 		
@@ -888,9 +964,9 @@ void CTetrisMFCView::OnKeyDown(WPARAM wp, LPARAM lp)
 
 void CTetrisMFCView::OnKeyUp(WPARAM wp, LPARAM lp)
 {
-	if (wp == VK_DOWN) fig[0].NeedMoveDown=false;	
-	if (wp == VK_LEFT) fig[0].NeedMoveLeft=false;	
-	if (wp == VK_RIGHT) fig[0].NeedMoveRight=false;
+	if (wp == VK_DOWN) fig[FIGURE_INDEX].NeedMoveDown=false;	
+	if (wp == VK_LEFT) fig[FIGURE_INDEX].NeedMoveLeft=false;	
+	if (wp == VK_RIGHT) fig[FIGURE_INDEX].NeedMoveRight=false;
 }
 
 void CTetrisMFCView::OnKillFocus(CWnd* pNewWnd) 
